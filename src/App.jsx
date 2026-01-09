@@ -377,7 +377,7 @@ export default function App() {
 
             <div>
                <h1 className={`text-2xl font-bold flex gap-2 items-center ${titleClass}`}>
-                  <Calendar className={titleClass}/> Mon Kanban vibecodé
+                  <Calendar className={titleClass}/> Mon Kanban Vibecodé
                </h1>
                <p className="text-gray-500 text-sm mt-1">
                  {visibleTasks.filter(t => !t.completed).length} tâches à faire
