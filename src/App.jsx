@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   DndContext, 
   closestCorners, 
@@ -291,7 +291,7 @@ export default function App() {
   };
 
   const clearCompleted = (columnId) => {
-    if(confirm('Supprimer toutes les tâches terminées de cette colonne ?')) {
+    if(window.confirm('Supprimer toutes les tâches terminées de cette colonne ?')) {
       setTasks(tasks.filter(t => !((t.type || 'pro') === mode && t.columnId === columnId && t.completed)));
     }
   };

@@ -1,16 +1,42 @@
-# React + Vite
+# Kanban Vibecodé
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<img src="public/favicon.svg" width="80" alt="Logo Kanban" />
 
-Currently, two official plugins are available:
+Une application de gestion de tâches intuitive type Kanban, conçue pour organiser votre charge de travail avec une séparation claire entre vie professionnelle et vie personnelle.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Fonctionnalités
 
-## React Compiler
+- **Organisation Temporelle** : Colonnes dynamiques (Aujourd'hui, Demain, Cette semaine, Ce mois, Plus tard).
+- **Double Mode** : Basculez instantanément entre un espace **Pro** (thème Indigo) et **Perso** (thème Émeraude).
+- **Drag & Drop Fluide** : Réorganisez vos tâches par simple glisser-déposer (propulsé par `@dnd-kit`).
+- **Gestion Complète** :
+  - Ajout rapide de tâches.
+  - Édition par double-clic.
+  - Marquage des tâches terminées.
+  - Nettoyage automatique des tâches finies par colonne.
+- **Persistance** : Sauvegarde automatique de vos données dans le navigateur (LocalStorage).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Installation
 
-## Expanding the ESLint configuration
+1. Clonez le dépôt :
+   ```bash
+   git clone <votre-url-repo>
+   cd kanban-app
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+2. Installez les dépendances :
+   ```bash
+   npm install
+   ```
+
+3. Lancez l'application en mode développement :
+   ```bash
+   npm run dev
+   ```
+
+## Technologies
+
+- React
+- Tailwind CSS
+- @dnd-kit
+- Lucide React (Icônes)
