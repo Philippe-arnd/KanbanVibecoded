@@ -20,8 +20,8 @@ Une application de gestion de tâches intuitive type Kanban, conçue pour organi
 
 1. Clonez le dépôt :
    ```bash
-   git clone <votre-url-repo>
-   cd kanban-app
+   git clone https://github.com/Philippe-arnd/KanbanVibecoded.git
+   cd KanbanVibecoded
    ```
 
 2. Installez les dépendances :
