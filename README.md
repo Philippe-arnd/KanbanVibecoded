@@ -4,6 +4,8 @@
 
 Une application de gestion de tâches intuitive type Kanban, conçue pour organiser votre charge de travail avec une séparation claire entre vie professionnelle et vie personnelle.
 
+> Pour les spécifications détaillées, voir [requirements.md](./requirements.md).
+
 ## Fonctionnalités
 
 - **Organisation Temporelle** : Colonnes dynamiques (Aujourd'hui, Demain, Cette semaine, Ce mois, Plus tard).
@@ -40,3 +42,7 @@ Une application de gestion de tâches intuitive type Kanban, conçue pour organi
 - Tailwind CSS
 - @dnd-kit
 - Lucide React (Icônes)
+
+## Crédits
+
+© 2024 - [Kanban Vibecodé](https://github.com/Philippe-arnd/KanbanVibecoded)

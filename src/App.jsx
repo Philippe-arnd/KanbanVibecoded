@@ -20,7 +20,7 @@ import {
   useSortable 
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, Trash2, GripVertical, CheckCircle2, Circle, Eraser, Briefcase, Home, Loader2, LogOut, KeyRound, Lock, Eye, EyeOff, Check } from 'lucide-react';
+import { Plus, Trash2, GripVertical, CheckCircle2, Circle, Eraser, Briefcase, Home, Loader2, LogOut, KeyRound, Lock, Eye, EyeOff, Check, Github } from 'lucide-react';
 
 // --- CONFIGURATION ---
 const COLUMNS = [
@@ -440,7 +440,7 @@ export default function App() {
   const buttonClass = isPro ? "bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-xl font-bold transition shadow-lg shadow-indigo-200" : "bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-xl font-bold transition shadow-lg shadow-emerald-200";
 
   return (
-    <div className="p-4 md:p-8 bg-[#586A7A] min-h-screen font-sans">
+    <div className="p-4 md:p-8 bg-[#586A7A] min-h-screen font-sans flex flex-col">
       {showChangePassword && (
         <UpdatePassword
           title="Changer votre mot de passe"
@@ -493,6 +493,20 @@ export default function App() {
         {/* Ajoute l'assistant ici, il se positionnera en "fixed" par-dessus tout */}
         <RetroAssistant tasks={tasks} />
       </div>
+
+      <footer className="mt-auto w-full p-4 text-center">
+        <p className="inline-flex items-center gap-2 text-black/30 text-sm font-bold">
+          <span>© {new Date().getFullYear()} - </span>
+          <a
+            href="https://github.com/Philippe-arnd/KanbanVibecoded"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 hover:text-black/60 transition-colors"
+          >
+            Kanban Vibecodé <Github size={16} />
+          </a>
+        </p>
+      </footer>
     </div>
   );
 }
