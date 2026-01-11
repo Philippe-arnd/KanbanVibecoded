@@ -75,7 +75,7 @@ function TaskCard({ task, deleteTask, toggleTask, updateTitle, isOverlay }) {
     return (
       <div className="bg-white p-3 rounded-lg shadow-2xl border-2 border-indigo-500 cursor-grabbing rotate-3 scale-105 z-50 flex flex-col gap-2">
         <div className="flex justify-between items-start">
-          <span className="text-gray-900 font-medium">{task.title}</span>
+          <span className="text-sm text-gray-900 font-medium break-all">{task.title}</span>
         </div>
       </div>
     );
@@ -89,9 +89,9 @@ function TaskCard({ task, deleteTask, toggleTask, updateTitle, isOverlay }) {
         </button>
         <div className="flex-1 pr-6 min-h-[24px]">
           {isEditing ? (
-            <input ref={inputRef} value={editValue} onChange={(e) => setEditValue(e.target.value)} onBlur={saveEdit} onKeyDown={handleKeyDown} className="w-full text-gray-800 font-medium bg-blue-50 -ml-1 pl-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input ref={inputRef} value={editValue} onChange={(e) => setEditValue(e.target.value)} onBlur={saveEdit} onKeyDown={handleKeyDown} className="w-full text-sm text-gray-800 font-medium bg-blue-50 -ml-1 pl-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
           ) : (
-            <span onDoubleClick={() => setIsEditing(true)} className="text-gray-800 font-medium break-words block cursor-text" title="Double-cliquez pour éditer">{task.title}</span>
+            <span onDoubleClick={() => setIsEditing(true)} className="text-sm text-gray-800 font-medium break-all block cursor-text" title="Double-cliquez pour éditer">{task.title}</span>
           )}
         </div>
       </div>
@@ -106,7 +106,7 @@ function CompletedTaskCard({ task, deleteTask, toggleTask }) {
   return (
     <div className="bg-gray-100 p-3 mb-2 rounded-lg border border-gray-200 opacity-75 group flex items-start gap-3">
       <button onClick={() => toggleTask(task.id)} className="mt-1 text-green-600 hover:text-gray-500 transition-colors flex-shrink-0"><CheckCircle2 size={20} /></button>
-      <div className="flex-1"><span className="text-gray-500 font-medium break-words line-through decoration-gray-400">{task.title}</span></div>
+      <div className="flex-1"><span className="text-sm text-gray-500 font-medium break-all line-through decoration-gray-400">{task.title}</span></div>
       <button onClick={() => deleteTask(task.id)} className="text-gray-300 hover:text-red-500"><Trash2 size={16}/></button>
     </div>
   );
@@ -119,7 +119,7 @@ function KanbanColumn({ col, tasks, deleteTask, toggleTask, updateTitle, clearCo
   const completedTasks = tasks.filter(t => t.completed);
 
   return (
-    <div ref={setNodeRef} className={`p-4 rounded-xl border ${col.color} min-h-[500px] flex flex-col`}>
+    <div ref={setNodeRef} className={`p-4 rounded-xl border ${col.color} min-h-[500px] flex flex-col min-w-[280px] md:min-w-0 snap-center`}>
       <div className="flex justify-between items-center mb-4 min-h-[32px]">
         <div className="flex items-center gap-2">
           <h2 className="font-bold text-sm uppercase tracking-wide opacity-80">{col.title}</h2>
@@ -430,7 +430,7 @@ export default function App() {
           onDone={() => setShowChangePassword(false)}
         />
       )}
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full mx-auto">
         <div className="flex flex-col md:flex-row justify-between mb-8 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
           <div className="flex flex-col gap-4">
             <div className="bg-gray-100 p-1 rounded-lg inline-flex self-start">
@@ -466,7 +466,7 @@ export default function App() {
         </div>
 
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-start">
+          <div className="flex md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 items-start overflow-x-auto md:overflow-visible pb-4 snap-x snap-mandatory md:snap-none">
             {COLUMNS.map(col => <KanbanColumn key={col.id} col={col} tasks={visibleTasks.filter(t => t.columnId === col.id)} deleteTask={deleteTask} toggleTask={toggleTask} updateTitle={updateTaskTitle} clearCompleted={clearCompleted}/>)}
           </div>
           <DragOverlay dropAnimation={dropAnimation}>{activeTask ? <TaskCard task={activeTask} isOverlay /> : null}</DragOverlay>
