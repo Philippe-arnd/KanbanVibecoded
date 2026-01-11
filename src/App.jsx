@@ -19,7 +19,7 @@ import {
   useSortable 
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, Trash2, GripVertical, CheckCircle2, Circle, Eraser, Briefcase, Home, Loader2, LogOut } from 'lucide-react';
+import { Plus, Trash2, GripVertical, CheckCircle2, Circle, Eraser, Briefcase, Home, Loader2, LogOut, KeyRound, Lock, Eye, EyeOff, Check } from 'lucide-react';
 
 // --- CONFIGURATION ---
 const COLUMNS = [
@@ -148,11 +148,110 @@ function KanbanColumn({ col, tasks, deleteTask, toggleTask, updateTitle, clearCo
   );
 }
 
+// --- COMPOSANT DE MISE À JOUR DU MOT DE PASSE ---
+function UpdatePassword({ onDone, title, description }) {
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const getPasswordStrength = (pass) => {
+    let score = 0;
+    if (!pass) return 0;
+    if (pass.length >= 8) score++;
+    if (/[A-Z]/.test(pass)) score++;
+    if (/[0-9]/.test(pass)) score++;
+    if (/[^A-Za-z0-9]/.test(pass)) score++;
+    return score;
+  };
+  const strength = getPasswordStrength(password);
+
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    if (password !== confirmPassword) {
+      setError("Les mots de passe ne correspondent pas !");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Le mot de passe doit faire au moins 6 caractères.");
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setSuccess("Mot de passe mis à jour avec succès !");
+      setTimeout(() => {
+        onDone();
+      }, 2000);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 relative">
+        <div className="text-center mb-8">
+          <div className="inline-flex p-3 rounded-full bg-indigo-50 text-indigo-600 mb-4">
+            <KeyRound size={32} />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+          <p className="text-gray-500 mt-2">{description}</p>
+        </div>
+
+        <form onSubmit={handleUpdatePassword} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe</label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
+              <input type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" placeholder="••••••••" minLength={6} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+            </div>
+          </div>
+
+          <div className="flex gap-1 h-1.5">
+            {[1, 2, 3, 4].map((step) => (<div key={step} className={`h-full flex-1 rounded-full transition-all duration-300 ${strength >= step ? (strength === 4 ? 'bg-emerald-500' : strength === 3 ? 'bg-blue-500' : strength === 2 ? 'bg-orange-400' : 'bg-red-400') : 'bg-gray-200'}`} />))}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Confirmer le mot de passe</label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
+              <input type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 outline-none transition ${confirmPassword && password !== confirmPassword ? 'border-red-300 focus:ring-red-200' : 'border-gray-300 focus:ring-indigo-500'}`} placeholder="Répétez le mot de passe" />
+              {confirmPassword && password === confirmPassword && (<Check className="absolute right-3 top-3 text-emerald-500 animate-in fade-in zoom-in" size={18} />)}
+            </div>
+          </div>
+
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+          {success && <p className="text-green-500 text-sm text-center">{success}</p>}
+
+          <button type="submit" disabled={loading || !!success} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200 flex justify-center items-center">
+            {loading ? <Loader2 className="animate-spin" /> : 'Mettre à jour'}
+          </button>
+        </form>
+        
+        {title === "Changer votre mot de passe" && (
+            <button onClick={onDone} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // --- APP PRINCIPALE ---
 export default function App() {
   const [session, setSession] = useState(null); // SESSION UTILISATEUR
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   
   const [mode, setMode] = useState(() => localStorage.getItem('kanban-mode') || 'pro');
   const [input, setInput] = useState('');
@@ -160,11 +259,10 @@ export default function App() {
 
   // 1. Gestion de la Session Supabase
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (_event === "PASSWORD_RECOVERY") {
+        setIsPasswordRecovery(true);
+      }
       setSession(session);
     });
 
@@ -192,6 +290,22 @@ export default function App() {
   }
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+
+  // Gère la vue de réinitialisation de mot de passe après clic sur le lien dans l'email
+  if (isPasswordRecovery) {
+    return (
+      <UpdatePassword
+        title="Créez votre nouveau mot de passe"
+        description="Vous avez été redirigé depuis un lien de réinitialisation. Entrez votre nouveau mot de passe ci-dessous."
+        onDone={() => {
+          setIsPasswordRecovery(false);
+          // Déconnecte l'utilisateur pour qu'il se reconnecte avec son nouveau mot de passe
+          supabase.auth.signOut();
+          window.location.hash = ''; // Nettoie l'URL
+        }}
+      />
+    );
+  }
 
   // Si pas connecté -> Afficher le Login
   if (!session) {
@@ -309,6 +423,13 @@ export default function App() {
 
   return (
     <div className="p-4 md:p-8 bg-gray-50 min-h-screen font-sans">
+      {showChangePassword && (
+        <UpdatePassword
+          title="Changer votre mot de passe"
+          description="Entrez un nouveau mot de passe pour votre compte."
+          onDone={() => setShowChangePassword(false)}
+        />
+      )}
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between mb-8 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
           <div className="flex flex-col gap-4">
@@ -332,8 +453,13 @@ export default function App() {
               <button type="submit" className={buttonClass} disabled={loading}><Plus /></button>
             </form>
             
+            {/* BOUTON CHANGER MOT DE PASSE */}
+            <button onClick={() => setShowChangePassword(true)} className="p-3 text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-xl transition" title="Changer de mot de passe">
+              <KeyRound size={20} />
+            </button>
+
             {/* BOUTON LOGOUT */}
-            <button onClick={handleLogout} className="md:ml-2 p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition" title="Se déconnecter">
+            <button onClick={handleLogout} className="p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition" title="Se déconnecter">
               <LogOut size={20} />
             </button>
           </div>

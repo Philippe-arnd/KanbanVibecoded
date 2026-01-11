@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { supabase } from './supabaseClient';
-import { Lock, Mail, Loader2, Eye, EyeOff, Check, MailCheck } from 'lucide-react';
+import { Lock, Mail, Loader2, Eye, EyeOff, Check, MailCheck, ArrowLeft } from 'lucide-react';
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isLogin, setIsLogin] = useState(true); // Basculer entre Login et Sign Up
+  const [view, setView] = useState('login'); // 'login', 'signup', 'forgot_password'
   const [showPassword, setShowPassword] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showResetSuccess, setShowResetSuccess] = useState(false);
 
   // Calcul de la force du mot de passe (0 à 4)
   const getPasswordStrength = (pass) => {
@@ -30,14 +31,14 @@ export default function Auth() {
 
     let error = null;
 
-    if (isLogin) {
+    if (view === 'login') {
       // 1. Se connecter
       const { error: signInError } = await supabase.auth.signInWithPassword({ 
         email, 
         password 
       });
       error = signInError;
-    } else {
+    } else if (view === 'signup') {
       // Vérification de la confirmation du mot de passe
       if (password !== confirmPassword) {
         alert("Les mots de passe ne correspondent pas !");
@@ -57,6 +58,14 @@ export default function Auth() {
       
       if (!error && data) {
         setShowSuccess(true);
+      }
+    } else if (view === 'forgot_password') {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      });
+      error = resetError;
+      if (!error) {
+        setShowResetSuccess(true);
       }
     }
 
@@ -78,7 +87,27 @@ export default function Auth() {
           <p className="text-gray-500 mb-8">
             Un lien de confirmation a été envoyé à <br/><span className="font-medium text-gray-900">{email}</span>.
           </p>
-          <button onClick={() => { setShowSuccess(false); setIsLogin(true); }} className="text-indigo-600 font-bold hover:underline">
+          <button onClick={() => { setShowSuccess(false); setView('login'); }} className="text-indigo-600 font-bold hover:underline">
+            Retour à la connexion
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // --- ÉCRAN DE SUCCÈS (MOT DE PASSE OUBLIÉ) ---
+  if (showResetSuccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 font-sans">
+        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 text-center">
+          <div className="inline-flex p-4 rounded-full bg-green-50 text-green-600 mb-6">
+            <MailCheck size={48} />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Email de réinitialisation envoyé !</h2>
+          <p className="text-gray-500 mb-8">
+            Un lien pour réinitialiser votre mot de passe a été envoyé à <br/><span className="font-medium text-gray-900">{email}</span>.
+          </p>
+          <button onClick={() => { setShowResetSuccess(false); setView('login'); }} className="text-indigo-600 font-bold hover:underline">
             Retour à la connexion
           </button>
         </div>
@@ -95,101 +124,138 @@ export default function Auth() {
           <p className="text-gray-500 mt-2">Gérez vos projets Pro & Perso</p>
         </div>
 
-        <form onSubmit={handleAuth} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 text-gray-400" size={18} />
-              <input 
-                type="email" 
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-                placeholder="vous@exemple.com"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
-              <input 
-                type={showPassword ? "text" : "password"}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-                placeholder="••••••••"
-                minLength={6}
-              />
-              <button 
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Jauge de sécurité et Confirmation (Uniquement en mode Inscription) */}
-          {!isLogin && (
-            <>
-              {/* Jauge */}
-              <div className="flex gap-1 h-1.5 mb-4">
-                {[1, 2, 3, 4].map((step) => (
-                  <div 
-                    key={step} 
-                    className={`h-full flex-1 rounded-full transition-all duration-300 ${strength >= step ? (strength === 4 ? 'bg-emerald-500' : strength === 3 ? 'bg-blue-500' : strength === 2 ? 'bg-orange-400' : 'bg-red-400') : 'bg-gray-200'}`} 
-                  />
-                ))}
+        {view === 'forgot_password' ? (
+          <form onSubmit={handleAuth} className="space-y-4">
+            <p className="text-center text-gray-600">Entrez votre email pour recevoir un lien de réinitialisation.</p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 text-gray-400" size={18} />
+                <input 
+                  type="email" 
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                  placeholder="vous@exemple.com"
+                />
               </div>
+            </div>
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200 flex justify-center items-center"
+            >
+              {loading ? <Loader2 className="animate-spin" /> : "Envoyer le lien"}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleAuth} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 text-gray-400" size={18} />
+                <input 
+                  type="email" 
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                  placeholder="vous@exemple.com"
+                />
+              </div>
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Confirmer le mot de passe</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
-                  <input 
-                    type="password" 
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 outline-none transition ${confirmPassword && password !== confirmPassword ? 'border-red-300 focus:ring-red-200' : 'border-gray-300 focus:ring-indigo-500'}`}
-                    placeholder="Répétez le mot de passe"
-                  />
-                  {confirmPassword && password === confirmPassword && (
-                    <Check className="absolute right-3 top-3 text-emerald-500 animate-in fade-in zoom-in" size={18} />
-                  )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
+                <input 
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                  placeholder="••••••••"
+                  minLength={6}
+                />
+                <button 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Jauge de sécurité et Confirmation (Uniquement en mode Inscription) */}
+            {view === 'signup' && (
+              <>
+                {/* Jauge */}
+                <div className="flex gap-1 h-1.5 mb-4">
+                  {[1, 2, 3, 4].map((step) => (
+                    <div 
+                      key={step} 
+                      className={`h-full flex-1 rounded-full transition-all duration-300 ${strength >= step ? (strength === 4 ? 'bg-emerald-500' : strength === 3 ? 'bg-blue-500' : strength === 2 ? 'bg-orange-400' : 'bg-red-400') : 'bg-gray-200'}`} 
+                    />
+                  ))}
                 </div>
-              </div>
-            </>
-          )}
 
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200 flex justify-center items-center"
-          >
-            {loading ? <Loader2 className="animate-spin" /> : (isLogin ? 'Se connecter' : "S'inscrire")}
-          </button>
-        </form>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirmer le mot de passe</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
+                    <input 
+                      type="password" 
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 outline-none transition ${confirmPassword && password !== confirmPassword ? 'border-red-300 focus:ring-red-200' : 'border-gray-300 focus:ring-indigo-500'}`}
+                      placeholder="Répétez le mot de passe"
+                    />
+                    {confirmPassword && password === confirmPassword && (
+                      <Check className="absolute right-3 top-3 text-emerald-500 animate-in fade-in zoom-in" size={18} />
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {view === 'login' && (
+              <div className="text-right">
+                <button type="button" onClick={() => setView('forgot_password')} className="text-sm text-indigo-600 hover:underline font-medium">Mot de passe oublié ?</button>
+              </div>
+            )}
+
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200 flex justify-center items-center"
+            >
+              {loading ? <Loader2 className="animate-spin" /> : (view === 'login' ? 'Se connecter' : "S'inscrire")}
+            </button>
+          </form>
+        )}
 
         <div className="mt-6 text-center text-sm">
-          <span className="text-gray-500">
-            {isLogin ? "Pas encore de compte ?" : "Déjà un compte ?"}
-          </span>
-          <button 
-            onClick={() => {
-              setIsLogin(!isLogin);
-              setPassword('');
-              setConfirmPassword('');
-            }} 
-            className="ml-2 text-indigo-600 font-bold hover:underline"
-          >
-            {isLogin ? "Créer un compte" : "Se connecter"}
-          </button>
+          {view === 'login' && (
+            <>
+              <span className="text-gray-500">Pas encore de compte ?</span>
+              <button onClick={() => setView('signup')} className="ml-2 text-indigo-600 font-bold hover:underline">Créer un compte</button>
+            </>
+          )}
+          {view === 'signup' && (
+            <>
+              <span className="text-gray-500">Déjà un compte ?</span>
+              <button onClick={() => setView('login')} className="ml-2 text-indigo-600 font-bold hover:underline">Se connecter</button>
+            </>
+          )}
+          {view === 'forgot_password' && (
+            <button onClick={() => setView('login')} className="text-indigo-600 font-bold hover:underline flex items-center gap-2 mx-auto">
+              <ArrowLeft size={16} /> Retour à la connexion
+            </button>
+          )}
         </div>
       </div>
     </div>
