@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from './supabaseClient';
 import Auth from './Auth'; // <-- On importe le composant Auth
+import RetroAssistant from './RetroAssistant';
 import { 
   DndContext, 
   closestCorners, 
@@ -488,6 +489,9 @@ export default function App() {
           </div>
           <DragOverlay dropAnimation={dropAnimation}>{activeTask ? <TaskCard task={activeTask} isOverlay /> : null}</DragOverlay>
         </DndContext>
+
+        {/* Ajoute l'assistant ici, il se positionnera en "fixed" par-dessus tout */}
+        <RetroAssistant tasks={tasks} />
       </div>
     </div>
   );
