@@ -23,11 +23,11 @@ import { Plus, Trash2, GripVertical, CheckCircle2, Circle, Eraser, Briefcase, Ho
 
 // --- CONFIGURATION ---
 const COLUMNS = [
-  { id: 'today', title: "Aujourd'hui", color: 'bg-red-50 border-red-200 text-red-800' },
-  { id: 'tomorrow', title: 'Demain', color: 'bg-orange-50 border-orange-200 text-orange-800' },
-  { id: 'week', title: 'Cette semaine', color: 'bg-blue-50 border-blue-200 text-blue-800' },
-  { id: 'month', title: 'Ce mois', color: 'bg-purple-50 border-purple-200 text-purple-800' },
-  { id: 'later', title: 'Plus tard', color: 'bg-gray-50 border-gray-200 text-gray-800' },
+  { id: 'today', title: "Aujourd'hui", headerBg: 'bg-[#FFC8A2]' }, // Saumon
+  { id: 'tomorrow', title: 'Demain', headerBg: 'bg-[#FFDF91]' }, // Jaune
+  { id: 'week', title: 'Cette semaine', headerBg: 'bg-[#89CFF0]' }, // Bleu Ciel
+  { id: 'month', title: 'Ce mois', headerBg: 'bg-[#88D8B0]' }, // Vert Menthe
+  { id: 'later', title: 'Plus tard', headerBg: 'bg-black/10' }, // Gris neutre
 ];
 
 // --- COMPOSANT CARTE (Inchangé) ---
@@ -73,30 +73,30 @@ function TaskCard({ task, deleteTask, toggleTask, updateTitle, isOverlay }) {
 
   if (isOverlay) {
     return (
-      <div className="bg-white p-3 rounded-lg shadow-2xl border-2 border-indigo-500 cursor-grabbing rotate-3 scale-105 z-50 flex flex-col gap-2">
+      <div className="bg-white p-3 rounded-none shadow-none border-2 border-black cursor-grabbing rotate-3 scale-105 z-50 flex flex-col gap-2">
         <div className="flex justify-between items-start">
-          <span className="text-sm text-gray-900 font-medium break-all">{task.title}</span>
+          <span className="text-sm text-black font-medium break-all">{task.title}</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="bg-white p-3 mb-2 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-all group relative">
+    <div ref={setNodeRef} style={style} className="bg-white p-3 mb-3 rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border-2 border-black active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none group relative">
       <div className="flex items-start gap-3">
-        <button onClick={() => toggleTask(task.id)} className="mt-1 text-gray-400 hover:text-green-600 transition-colors flex-shrink-0">
+        <button onClick={() => toggleTask(task.id)} className="mt-1 text-black/60 hover:text-black transition-colors flex-shrink-0">
           <Circle size={20} />
         </button>
         <div className="flex-1 pr-6 min-h-[24px]">
           {isEditing ? (
-            <input ref={inputRef} value={editValue} onChange={(e) => setEditValue(e.target.value)} onBlur={saveEdit} onKeyDown={handleKeyDown} className="w-full text-sm text-gray-800 font-medium bg-blue-50 -ml-1 pl-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input ref={inputRef} value={editValue} onChange={(e) => setEditValue(e.target.value)} onBlur={saveEdit} onKeyDown={handleKeyDown} className="w-full text-sm text-black font-medium bg-white -ml-1 pl-1 rounded-none border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none" />
           ) : (
-            <span onDoubleClick={() => setIsEditing(true)} className="text-sm text-gray-800 font-medium break-all block cursor-text" title="Double-cliquez pour éditer">{task.title}</span>
+            <span onDoubleClick={() => setIsEditing(true)} className="text-sm text-black font-medium break-all block cursor-text" title="Double-cliquez pour éditer">{task.title}</span>
           )}
         </div>
       </div>
-      {!isEditing && <div {...attributes} {...listeners} className="absolute bottom-2 right-2 p-1 text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none"><GripVertical size={16} /></div>}
-      {!isEditing && <button onClick={() => deleteTask(task.id)} className="absolute top-3 right-3 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={16}/></button>}
+      {!isEditing && <div {...attributes} {...listeners} className="absolute bottom-2 right-2 p-1 text-black/40 hover:text-black cursor-grab active:cursor-grabbing touch-none"><GripVertical size={16} /></div>}
+      {!isEditing && <button onClick={() => deleteTask(task.id)} className="absolute top-3 right-3 text-black/40 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={16}/></button>}
     </div>
   );
 }
@@ -104,10 +104,10 @@ function TaskCard({ task, deleteTask, toggleTask, updateTitle, isOverlay }) {
 // --- COMPOSANT TÂCHE TERMINÉE (Inchangé) ---
 function CompletedTaskCard({ task, deleteTask, toggleTask }) {
   return (
-    <div className="bg-gray-100 p-3 mb-2 rounded-lg border border-gray-200 opacity-75 group flex items-start gap-3">
-      <button onClick={() => toggleTask(task.id)} className="mt-1 text-green-600 hover:text-gray-500 transition-colors flex-shrink-0"><CheckCircle2 size={20} /></button>
-      <div className="flex-1"><span className="text-sm text-gray-500 font-medium break-all line-through decoration-gray-400">{task.title}</span></div>
-      <button onClick={() => deleteTask(task.id)} className="text-gray-300 hover:text-red-500"><Trash2 size={16}/></button>
+    <div className="bg-black/5 p-3 mb-2 rounded-none border-2 border-dashed border-black/20 opacity-75 group flex items-start gap-3">
+      <button onClick={() => toggleTask(task.id)} className="mt-1 text-green-600 hover:text-black transition-colors flex-shrink-0"><CheckCircle2 size={20} /></button>
+      <div className="flex-1"><span className="text-sm text-black/60 font-medium break-all line-through decoration-black/40">{task.title}</span></div>
+      <button onClick={() => deleteTask(task.id)} className="text-black/30 hover:text-red-500"><Trash2 size={16}/></button>
     </div>
   );
 }
@@ -119,17 +119,17 @@ function KanbanColumn({ col, tasks, deleteTask, toggleTask, updateTitle, clearCo
   const completedTasks = tasks.filter(t => t.completed);
 
   return (
-    <div ref={setNodeRef} className={`p-4 rounded-xl border ${col.color} min-h-[500px] flex flex-col min-w-[280px] md:min-w-0 snap-center`}>
-      <div className="flex justify-between items-center mb-4 min-h-[32px]">
+    <div ref={setNodeRef} className={`bg-[#E0EBDD] rounded-none border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] min-h-[500px] flex flex-col min-w-[280px] md:min-w-0 snap-center`}>
+      <div className={`flex justify-between items-center p-2 border-b-2 border-black ${col.headerBg}`}>
         <div className="flex items-center gap-2">
-          <h2 className="font-bold text-sm uppercase tracking-wide opacity-80">{col.title}</h2>
-          <span className="bg-white/50 px-2 py-0.5 rounded text-xs font-bold">{activeTasks.length}</span>
+          <h2 className="font-bold text-black text-sm uppercase tracking-wide">{col.title}</h2>
+          <span className="bg-white/80 border border-black px-2 py-0.5 rounded-sm text-xs font-bold">{activeTasks.length}</span>
         </div>
         {completedTasks.length > 0 && (
-          <button onClick={() => clearCompleted(col.id)} className="text-xs flex items-center gap-1 bg-white/60 hover:bg-red-100 hover:text-red-600 px-2 py-1 rounded transition text-gray-500 shadow-sm"><Eraser size={14} /> Nettoyer</button>
+          <button onClick={() => clearCompleted(col.id)} className="text-xs flex items-center gap-1 bg-white hover:bg-red-100 text-black px-2 py-1 rounded-sm border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none"><Eraser size={14} /> Nettoyer</button>
         )}
       </div>
-      <div className="flex-1">
+      <div className="flex-1 p-4">
         <SortableContext items={activeTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
           {activeTasks.map(task => <TaskCard key={task.id} task={task} deleteTask={deleteTask} toggleTask={toggleTask} updateTitle={updateTitle}/>)}
         </SortableContext>
@@ -137,9 +137,9 @@ function KanbanColumn({ col, tasks, deleteTask, toggleTask, updateTitle, clearCo
       {completedTasks.length > 0 && (
         <div className="mt-4">
           <div className="flex items-center gap-2 mb-3">
-             <div className="h-px bg-gray-300 flex-1 border-t border-dashed border-gray-400 opacity-50"></div>
-             <span className="text-xs font-medium text-gray-400 uppercase">Terminées ({completedTasks.length})</span>
-             <div className="h-px bg-gray-300 flex-1 border-t border-dashed border-gray-400 opacity-50"></div>
+             <div className="h-px bg-black/30 flex-1 border-t border-dashed border-black/40 opacity-50"></div>
+             <span className="text-xs font-medium text-black/50 uppercase">Terminées ({completedTasks.length})</span>
+             <div className="h-px bg-black/30 flex-1 border-t border-dashed border-black/40 opacity-50"></div>
           </div>
           <div className="opacity-80">{completedTasks.map(task => <CompletedTaskCard key={task.id} task={task} deleteTask={deleteTask} toggleTask={toggleTask}/>)}</div>
         </div>
@@ -197,22 +197,22 @@ function UpdatePassword({ onDone, title, description }) {
 
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 relative">
-        <div className="text-center mb-8">
-          <div className="inline-flex p-3 rounded-full bg-indigo-50 text-indigo-600 mb-4">
+      <div className="bg-[#E0EBDD] p-0 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full max-w-md border-2 border-black relative">
+        <div className="text-left mb-8 p-2 border-b-2 border-black bg-[#89CFF0] flex items-center gap-2">
+          <div className="inline-flex p-1 rounded-sm bg-white/50 text-black">
             <KeyRound size={32} />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-          <p className="text-gray-500 mt-2">{description}</p>
+          <h1 className="text-xl font-bold text-black">{title}</h1>
         </div>
 
-        <form onSubmit={handleUpdatePassword} className="space-y-4">
+        <form onSubmit={handleUpdatePassword} className="space-y-4 p-8 pt-0">
+          <p className="text-black/80 -mt-4 mb-4">{description}</p>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe</label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
-              <input type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition" placeholder="••••••••" minLength={6} />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+              <input type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-10 pr-10 py-2 bg-white border-2 border-black rounded-none focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-none" placeholder="••••••••" minLength={6} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-black/60 hover:text-black transition-colors">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
             </div>
           </div>
 
@@ -224,7 +224,7 @@ function UpdatePassword({ onDone, title, description }) {
             <label className="block text-sm font-medium text-gray-700 mb-1">Confirmer le mot de passe</label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
-              <input type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 outline-none transition ${confirmPassword && password !== confirmPassword ? 'border-red-300 focus:ring-red-200' : 'border-gray-300 focus:ring-indigo-500'}`} placeholder="Répétez le mot de passe" />
+              <input type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={`w-full pl-10 pr-4 py-2 border-2 rounded-none outline-none transition-none bg-white focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${confirmPassword && password !== confirmPassword ? 'border-red-500' : 'border-black'}`} placeholder="Répétez le mot de passe" />
               {confirmPassword && password === confirmPassword && (<Check className="absolute right-3 top-3 text-emerald-500 animate-in fade-in zoom-in" size={18} />)}
             </div>
           </div>
@@ -232,13 +232,13 @@ function UpdatePassword({ onDone, title, description }) {
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
           {success && <p className="text-green-500 text-sm text-center">{success}</p>}
 
-          <button type="submit" disabled={loading || !!success} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200 flex justify-center items-center">
+          <button type="submit" disabled={loading || !!success} className="w-full bg-[#89CFF0] text-black font-bold py-3 rounded-none border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none flex justify-center items-center">
             {loading ? <Loader2 className="animate-spin" /> : 'Mettre à jour'}
           </button>
         </form>
         
         {title === "Changer votre mot de passe" && (
-            <button onClick={onDone} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            <button onClick={onDone} className="absolute top-2 right-2 text-black hover:bg-red-500 hover:text-white border-2 border-black bg-white w-8 h-8 font-mono rounded-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none">&times;</button>
         )}
       </div>
     </div>
@@ -422,26 +422,26 @@ export default function App() {
   const buttonClass = isPro ? "bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-xl font-bold transition shadow-lg shadow-indigo-200" : "bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-xl font-bold transition shadow-lg shadow-emerald-200";
 
   return (
-    <div className="p-4 md:p-8 bg-gray-50 min-h-screen font-sans">
+    <div className="p-4 md:p-8 bg-[#586A7A] min-h-screen font-sans">
       {showChangePassword && (
         <UpdatePassword
           title="Changer votre mot de passe"
-          description="Entrez un nouveau mot de passe pour votre compte."
+          description="Entrez un nouveau mot de passe sécurisé pour votre compte."
           onDone={() => setShowChangePassword(false)}
         />
       )}
       <div className="w-full mx-auto">
-        <div className="flex flex-col md:flex-row justify-between mb-8 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div className="flex flex-col md:flex-row justify-between mb-8 gap-4 bg-[#FFDF91] p-4 rounded-none border-2 border-black">
           <div className="flex flex-col gap-4">
-            <div className="bg-gray-100 p-1 rounded-lg inline-flex self-start">
-              <button onClick={() => setMode('pro')} className={`px-4 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-all ${isPro ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}><Briefcase size={16} /> Pro</button>
-              <button onClick={() => setMode('perso')} className={`px-4 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-all ${!isPro ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}><Home size={16} /> Perso</button>
+            <div className="bg-black/10 p-1 rounded-sm inline-flex self-start border-2 border-black">
+              <button onClick={() => setMode('pro')} className={`px-4 py-1.5 rounded-sm text-sm font-bold flex items-center gap-2 transition-all ${isPro ? 'bg-white text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]' : 'text-black/70'}`}><Briefcase size={16} /> Pro</button>
+              <button onClick={() => setMode('perso')} className={`px-4 py-1.5 rounded-sm text-sm font-bold flex items-center gap-2 transition-all ${!isPro ? 'bg-white text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]' : 'text-black/70'}`}><Home size={16} /> Perso</button>
             </div>
             <div>
-               <h1 className={`text-2xl font-bold flex gap-2 items-center ${titleClass}`}>
+               <h1 className={`text-2xl font-bold flex gap-2 items-center text-black`}>
                   <img src="/favicon.svg" alt="Logo" className="w-8 h-8" /> Mon Kanban vibecodé
                </h1>
-               <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
+               <div className="flex items-center gap-2 text-black/80 text-sm mt-1">
                  {loading ? <span className="flex items-center gap-1"><Loader2 className="animate-spin" size={14}/> Synchronisation...</span> : <span>{visibleTasks.filter(t => !t.completed).length} tâches à faire</span>}
                </div>
             </div>
@@ -449,17 +449,17 @@ export default function App() {
           
           <div className="flex flex-col md:flex-row gap-2 md:items-center">
             <form onSubmit={addTask} className="flex gap-2 items-center w-full md:w-auto">
-              <input value={input} onChange={e => setInput(e.target.value)} className={inputClass} placeholder={`Nouvelle tâche ${isPro ? 'Pro' : 'Perso'}...`} />
-              <button type="submit" className={buttonClass} disabled={loading}><Plus /></button>
+              <input value={input} onChange={e => setInput(e.target.value)} className="bg-white p-3 rounded-none w-full md:w-80 outline-none border-2 border-black focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-none" placeholder={`Nouvelle tâche ${isPro ? 'Pro' : 'Perso'}...`} />
+              <button type="submit" className="bg-[#88D8B0] text-black p-3 rounded-none font-bold border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none" disabled={loading}><Plus /></button>
             </form>
             
             {/* BOUTON CHANGER MOT DE PASSE */}
-            <button onClick={() => setShowChangePassword(true)} className="p-3 text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-xl transition" title="Changer de mot de passe">
+            <button onClick={() => setShowChangePassword(true)} className="p-3 bg-white text-black rounded-none border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none" title="Changer de mot de passe">
               <KeyRound size={20} />
             </button>
 
             {/* BOUTON LOGOUT */}
-            <button onClick={handleLogout} className="p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition" title="Se déconnecter">
+            <button onClick={handleLogout} className="p-3 bg-white text-black hover:bg-red-500 hover:text-white rounded-none border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none" title="Se déconnecter">
               <LogOut size={20} />
             </button>
           </div>

@@ -79,15 +79,15 @@ export default function Auth() {
   if (showSuccess) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 font-sans">
-        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 text-center">
+        <div className="bg-[#E0EBDD] p-8 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full max-w-md border-2 border-black text-center">
           <div className="inline-flex p-4 rounded-full bg-green-50 text-green-600 mb-6 animate-bounce">
             <MailCheck size={48} />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Vérifiez vos emails !</h2>
-          <p className="text-gray-500 mb-8">
-            Un lien de confirmation a été envoyé à <br/><span className="font-medium text-gray-900">{email}</span>.
+          <h2 className="text-2xl font-bold text-black mb-2">Vérifiez vos emails !</h2>
+          <p className="text-black/80 mb-8">
+            Un lien de confirmation a été envoyé à <br/><span className="font-medium text-black">{email}</span>.
           </p>
-          <button onClick={() => { setShowSuccess(false); setView('login'); }} className="text-indigo-600 font-bold hover:underline">
+          <button onClick={() => { setShowSuccess(false); setView('login'); }} className="text-black font-bold underline">
             Retour à la connexion
           </button>
         </div>
@@ -99,15 +99,15 @@ export default function Auth() {
   if (showResetSuccess) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 font-sans">
-        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 text-center">
+        <div className="bg-[#E0EBDD] p-8 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full max-w-md border-2 border-black text-center">
           <div className="inline-flex p-4 rounded-full bg-green-50 text-green-600 mb-6">
             <MailCheck size={48} />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Email de réinitialisation envoyé !</h2>
-          <p className="text-gray-500 mb-8">
-            Un lien pour réinitialiser votre mot de passe a été envoyé à <br/><span className="font-medium text-gray-900">{email}</span>.
+          <h2 className="text-2xl font-bold text-black mb-2">Email de réinitialisation envoyé !</h2>
+          <p className="text-black/80 mb-8">
+            Un lien pour réinitialiser votre mot de passe a été envoyé à <br/><span className="font-medium text-black">{email}</span>.
           </p>
-          <button onClick={() => { setShowResetSuccess(false); setView('login'); }} className="text-indigo-600 font-bold hover:underline">
+          <button onClick={() => { setShowResetSuccess(false); setView('login'); }} className="text-black font-bold underline">
             Retour à la connexion
           </button>
         </div>
@@ -116,12 +116,12 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 font-sans">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
+    <div className="min-h-screen bg-[#586A7A] flex items-center justify-center p-4 font-sans">
+      <div className="bg-[#E0EBDD] p-8 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full max-w-md border-2 border-black">
         <div className="text-center mb-8">
           <img src="/favicon.svg" alt="Logo" className="w-12 h-12 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900">Mon Kanban Vibecodé</h1>
-          <p className="text-gray-500 mt-2">Gérez vos projets Pro & Perso</p>
+          <h1 className="text-2xl font-bold text-black">Mon Kanban Vibecodé</h1>
+          <p className="text-black/80 mt-2">Gérez vos projets Pro & Perso</p>
         </div>
 
         {view === 'forgot_password' ? (
@@ -136,7 +136,7 @@ export default function Auth() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                  className="w-full pl-10 pr-4 py-2 bg-white border-2 border-black rounded-none focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-none"
                   placeholder="vous@exemple.com"
                 />
               </div>
@@ -144,7 +144,7 @@ export default function Auth() {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200 flex justify-center items-center"
+              className="w-full bg-[#89CFF0] text-black font-bold py-3 rounded-none border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none flex justify-center items-center"
             >
               {loading ? <Loader2 className="animate-spin" /> : "Envoyer le lien"}
             </button>
@@ -160,7 +160,7 @@ export default function Auth() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                  className="w-full pl-10 pr-4 py-2 bg-white border-2 border-black rounded-none focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-none"
                   placeholder="vous@exemple.com"
                 />
               </div>
@@ -175,14 +175,14 @@ export default function Auth() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                className="w-full pl-10 pr-10 py-2 bg-white border-2 border-black rounded-none focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-none"
                   placeholder="••••••••"
                   minLength={6}
                 />
                 <button 
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute right-3 top-3 text-black/60 hover:text-black transition-colors"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -211,7 +211,7 @@ export default function Auth() {
                       required
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 outline-none transition ${confirmPassword && password !== confirmPassword ? 'border-red-300 focus:ring-red-200' : 'border-gray-300 focus:ring-indigo-500'}`}
+                    className={`w-full pl-10 pr-4 py-2 border-2 rounded-none outline-none transition-none bg-white focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${confirmPassword && password !== confirmPassword ? 'border-red-500' : 'border-black'}`}
                       placeholder="Répétez le mot de passe"
                     />
                     {confirmPassword && password === confirmPassword && (
@@ -224,14 +224,14 @@ export default function Auth() {
 
             {view === 'login' && (
               <div className="text-right">
-                <button type="button" onClick={() => setView('forgot_password')} className="text-sm text-indigo-600 hover:underline font-medium">Mot de passe oublié ?</button>
+                <button type="button" onClick={() => setView('forgot_password')} className="text-sm text-black hover:underline font-bold">Mot de passe oublié ?</button>
               </div>
             )}
 
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200 flex justify-center items-center"
+              className="w-full bg-[#89CFF0] text-black font-bold py-3 rounded-none border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none flex justify-center items-center"
             >
               {loading ? <Loader2 className="animate-spin" /> : (view === 'login' ? 'Se connecter' : "S'inscrire")}
             </button>
@@ -241,18 +241,18 @@ export default function Auth() {
         <div className="mt-6 text-center text-sm">
           {view === 'login' && (
             <>
-              <span className="text-gray-500">Pas encore de compte ?</span>
-              <button onClick={() => setView('signup')} className="ml-2 text-indigo-600 font-bold hover:underline">Créer un compte</button>
+              <span className="text-black/80">Pas encore de compte ?</span>
+              <button onClick={() => setView('signup')} className="ml-2 text-black font-bold underline">Créer un compte</button>
             </>
           )}
           {view === 'signup' && (
             <>
-              <span className="text-gray-500">Déjà un compte ?</span>
-              <button onClick={() => setView('login')} className="ml-2 text-indigo-600 font-bold hover:underline">Se connecter</button>
+              <span className="text-black/80">Déjà un compte ?</span>
+              <button onClick={() => setView('login')} className="ml-2 text-black font-bold underline">Se connecter</button>
             </>
           )}
           {view === 'forgot_password' && (
-            <button onClick={() => setView('login')} className="text-indigo-600 font-bold hover:underline flex items-center gap-2 mx-auto">
+            <button onClick={() => setView('login')} className="text-black font-bold underline flex items-center gap-2 mx-auto">
               <ArrowLeft size={16} /> Retour à la connexion
             </button>
           )}
