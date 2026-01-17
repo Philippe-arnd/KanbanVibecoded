@@ -117,6 +117,12 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-[#586A7A] flex items-center justify-center p-4 font-sans">
+      <style>{`
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+          display: none;
+        }
+      `}</style>
       <div className="bg-[#E0EBDD] p-8 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full max-w-md border-2 border-black">
         <div className="text-center mb-8">
           <img src="/favicon.svg" alt="Logo" className="w-12 h-12 mx-auto mb-4" />
@@ -193,13 +199,28 @@ export default function Auth() {
             {view === 'signup' && (
               <>
                 {/* Jauge */}
-                <div className="flex gap-1 h-1.5 mb-4">
-                  {[1, 2, 3, 4].map((step) => (
-                    <div 
-                      key={step} 
-                      className={`h-full flex-1 rounded-full transition-all duration-300 ${strength >= step ? (strength === 4 ? 'bg-emerald-500' : strength === 3 ? 'bg-blue-500' : strength === 2 ? 'bg-orange-400' : 'bg-red-400') : 'bg-gray-200'}`} 
-                    />
-                  ))}
+                <div className="group relative mb-4">
+                  <div className="flex gap-1 h-1.5 cursor-help">
+                    {[1, 2, 3, 4].map((step) => (
+                      <div 
+                        key={step} 
+                        className={`h-full flex-1 rounded-full transition-all duration-300 ${strength >= step ? (strength === 4 ? 'bg-emerald-500' : strength === 3 ? 'bg-blue-500' : strength === 2 ? 'bg-orange-400' : 'bg-red-400') : 'bg-gray-200'}`} 
+                      />
+                    ))}
+                  </div>
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-3 bg-[#FFFFE1] border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-xs hidden group-hover:block z-20">
+                    <p className="font-bold text-black mb-2 border-b border-black/20 pb-1">Critères de sécurité :</p>
+                    <ul className="space-y-1">
+                      <li className={`flex items-center gap-2 ${password.length >= 8 ? "text-green-600 font-bold" : "text-black/60"}`}>{password.length >= 8 ? <Check size={12} /> : <div className="w-3 h-3 rounded-full border border-black/20"></div>} 8 caractères min.</li>
+                      <li className={`flex items-center gap-2 ${/[A-Z]/.test(password) ? "text-green-600 font-bold" : "text-black/60"}`}>{/[A-Z]/.test(password) ? <Check size={12} /> : <div className="w-3 h-3 rounded-full border border-black/20"></div>} 1 majuscule</li>
+                      <li className={`flex items-center gap-2 ${/[0-9]/.test(password) ? "text-green-600 font-bold" : "text-black/60"}`}>{/[0-9]/.test(password) ? <Check size={12} /> : <div className="w-3 h-3 rounded-full border border-black/20"></div>} 1 chiffre</li>
+                      <li className={`flex items-center gap-2 ${/[^A-Za-z0-9]/.test(password) ? "text-green-600 font-bold" : "text-black/60"}`}>{/[^A-Za-z0-9]/.test(password) ? <Check size={12} /> : <div className="w-3 h-3 rounded-full border border-black/20"></div>} 1 caractère spécial</li>
+                    </ul>
+                    {/* Triangle */}
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-black"></div>
+                    <div className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-[#FFFFE1]"></div>
+                  </div>
                 </div>
 
                 <div>

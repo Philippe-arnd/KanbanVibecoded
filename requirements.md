@@ -38,14 +38,14 @@ L'application doit permettre de cloisonner les contextes de vie.
 - **FR-MODE-04** : L'interface doit adapter son thème couleur selon le mode (ex: Indigo pour Pro, Émeraude pour Perso).
 
 ### 2.5 Assistant Intelligent (RetroAssistant)
-- **FR-ASST-01** : Un assistant virtuel doit être présent sur l'interface (version Desktop).
+- **FR-ASST-01** : Un assistant virtuel au style "Pixel Art" doit être présent sur l'interface (version Desktop).
 - **FR-ASST-02** : L'assistant doit analyser le contexte (heure, nombre de tâches en cours/terminées) pour afficher des messages pertinents (encouragements, alertes de surcharge, etc.).
 - **FR-ASST-03** : L'assistant doit avoir des animations interactives au survol.
 
 ## 3. Exigences Non-Fonctionnelles
 
 ### 3.1 Interface Utilisateur (UI/UX)
-- **NFR-UI-01** : L'application doit respecter une charte graphique "Vibecoding" (bordures noires épaisses, ombres portées dures, couleurs pastel saturées).
+- **NFR-UI-01** : L'application doit respecter une charte graphique "computer retro 90s" (bordures noires épaisses, ombres portées dures, couleurs pastel saturées).
 - **NFR-UI-02** : L'application doit être "Responsive Design" (adaptée aux mobiles et aux écrans larges).
 - **NFR-UI-03** : Les interactions (drag & drop, boutons) doivent fournir un retour visuel immédiat (états active, hover).
 
