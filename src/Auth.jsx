@@ -51,7 +51,7 @@ export default function Auth() {
         email, 
         password,
         options: {
-          emailRedirectTo: window.location.origin // Redirige l'utilisateur vers l'app après clic sur le mail
+          emailRedirectTo: `${window.location.origin}/app` // Redirige vers l'app pour gérer la session
         }
       });
       error = signUpError;
@@ -61,7 +61,7 @@ export default function Auth() {
       }
     } else if (view === 'forgot_password') {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin,
+        redirectTo: `${window.location.origin}/app`,
       });
       error = resetError;
       if (!error) {
