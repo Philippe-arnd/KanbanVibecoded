@@ -4,6 +4,8 @@
 
 Une application de gestion de tâches intuitive type Kanban, dans un style retro computer (Néo-brutalisme), conçue pour organiser votre charge de travail avec une séparation claire entre vie professionnelle et vie personnelle.
 
+🚀 **URL de Production : https://kanban-vibecoded.vercel.app/**
+
 > Pour les spécifications détaillées, voir [requirements.md](./requirements.md).
 
 ## Fonctionnalités
@@ -11,13 +13,26 @@ Une application de gestion de tâches intuitive type Kanban, dans un style retro
 - **Organisation Temporelle** : Colonnes dynamiques (Aujourd'hui, Demain, Cette semaine, Ce mois, Plus tard).
 - **Double Mode** : Basculez instantanément entre un espace **Pro** (thème Indigo) et **Perso** (thème Émeraude).
 - **Drag & Drop Fluide** : Réorganisez vos tâches par simple glisser-déposer (propulsé par `@dnd-kit`).
-- **Assistant Rétro** : Un compagnon en Pixel Art qui analyse votre productivité et vous conseille.
+- **Assistant Rétro (K-Liwy 📎)** : Un compagnon en Pixel Art qui analyse votre productivité et vous conseille.
 - **Gestion Complète** :
   - Ajout rapide de tâches.
   - Édition par double-clic.
   - Marquage des tâches terminées.
   - Nettoyage automatique des tâches finies par colonne.
 - **Cloud & Sécurité** : Authentification complète, gestion de compte et synchronisation temps réel (Supabase).
+
+## Nouveautés v2.0.0 - Cloud System Upgrade & Retro UI 💾☁️
+
+Cette version 2.0 marque la transformation majeure de l'application vers une architecture SaaS connectée.
+
+### 🎨 Refonte UI "Retro Computer"
+- **Style Néo-Rétro** : Bordures noires épaisses, ombres dures et palette pastels (Windows 95 vibes).
+- **Composants Mécaniques** : Effets tactiles au clic.
+- **Assistant Virtuel** : Introduction de **K-Liwy**, assistant productivité humoristique.
+
+### ☁️ Backend & Sécurité (Supabase)
+- **Base de données PostgreSQL** : Synchronisation temps réel.
+- **Sécurité RLS** : Données privées et protégées.
 
 ## Installation
 
@@ -47,6 +62,7 @@ Une application de gestion de tâches intuitive type Kanban, dans un style retro
 ## Technologies
 
 - React
+- React Router Dom
 - Tailwind CSS
 - Supabase (Auth & Database)
 - @dnd-kit

@@ -1,7 +1,7 @@
-# Spécifications des Exigences Logicielles - Kanban Vibecodé
+# Spécifications des Exigences Logicielles - Kanban Vibecodé v2.0
 
 ## 1. Introduction
-L'application **Kanban Vibecodé** est un outil de gestion de tâches intuitif conçu pour aider les utilisateurs à organiser leur charge de travail quotidienne. Elle se distingue par une séparation claire entre les tâches professionnelles et personnelles, une organisation temporelle dynamique et une esthétique "Néo-brutalisme" rétro.
+L'application **Kanban Vibecodé** (v2.0) est un outil de gestion de tâches intuitif, évoluant vers une architecture SaaS connectée, conçu pour aider les utilisateurs à organiser leur charge de travail quotidienne. Elle se distingue par une séparation claire entre les tâches professionnelles et personnelles, une organisation temporelle dynamique et une esthétique "Néo-brutalisme" rétro.
 
 ## 2. Exigences Fonctionnelles
 
@@ -38,16 +38,16 @@ L'application doit permettre de cloisonner les contextes de vie.
 - **FR-MODE-04** : L'interface doit adapter son thème couleur selon le mode (ex: Indigo pour Pro, Émeraude pour Perso).
 
 ### 2.5 Assistant Intelligent (RetroAssistant)
-- **FR-ASST-01** : Un assistant virtuel au style "Pixel Art" doit être présent sur l'interface (version Desktop).
+- **FR-ASST-01** : Un assistant virtuel nommé **K-Liwy**, au style "Pixel Art", doit être présent sur l'interface (version Desktop).
 - **FR-ASST-02** : L'assistant doit analyser le contexte (heure, nombre de tâches en cours/terminées) pour afficher des messages pertinents (encouragements, alertes de surcharge, etc.).
 - **FR-ASST-03** : L'assistant doit avoir des animations interactives au survol.
 
 ## 3. Exigences Non-Fonctionnelles
 
 ### 3.1 Interface Utilisateur (UI/UX)
-- **NFR-UI-01** : L'application doit respecter une charte graphique "computer retro 90s" (bordures noires épaisses, ombres portées dures, couleurs pastel saturées).
+- **NFR-UI-01** : L'application doit respecter une charte graphique "computer retro 90s" / "Windows 95 vibes" (bordures noires épaisses, ombres portées dures, couleurs pastel saturées).
 - **NFR-UI-02** : L'application doit être "Responsive Design" (adaptée aux mobiles et aux écrans larges).
-- **NFR-UI-03** : Les interactions (drag & drop, boutons) doivent fournir un retour visuel immédiat (états active, hover).
+- **NFR-UI-03** : Les interactions (drag & drop, boutons) doivent fournir un retour visuel immédiat et tactile ("Composants Mécaniques" avec états active, hover).
 
 ### 3.2 Performance et Données
 - **NFR-PERF-01** : Les données doivent être synchronisées en temps réel avec le backend (Supabase).
