@@ -173,8 +173,6 @@ export default function KanbanApp() {
 
   const handleUpdateTask = async (updatedTask) => {
     setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t));
-    // Try to update subtasks. If the column doesn't exist, this might fail or just not save subtasks.
-    // Ideally we should alert the user or checking schema, but we'll try best effort.
     await supabase.from('tasks').update({ 
         title: updatedTask.title,
         subtasks: updatedTask.subtasks 
