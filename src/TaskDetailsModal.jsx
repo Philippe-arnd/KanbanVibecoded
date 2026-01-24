@@ -1,0 +1,163 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Plus, Trash2, CheckSquare, Square, GripVertical } from 'lucide-react';
+
+export function TaskDetailsModal({ task, onClose, onUpdate }) {
+  const [title, setTitle] = useState(task.title);
+  // Ensure subtasks is an array. If it's null/undefined, default to empty array.
+  // If it's a JSON string (from DB), parse it (handled by parent usually, but good to be safe if passed raw).
+  // Assuming parent passes a clean object.
+  const [subtasks, setSubtasks] = useState(Array.isArray(task.subtasks) ? task.subtasks : []);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
+  const modalRef = useRef(null);
+
+  // Close on click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
+
+  // Sync state when task prop changes (if switching tasks without closing)
+  useEffect(() => {
+    setTitle(task.title);
+    setSubtasks(Array.isArray(task.subtasks) ? task.subtasks : []);
+  }, [task]);
+
+  const handleTitleChange = (e) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    onUpdate({ ...task, title: newTitle, subtasks });
+  };
+
+  const addSubtask = (e) => {
+    e.preventDefault();
+    if (!newSubtaskTitle.trim()) return;
+
+    const newSubtask = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      title: newSubtaskTitle,
+      completed: false
+    };
+
+    const updatedSubtasks = [...subtasks, newSubtask];
+    setSubtasks(updatedSubtasks);
+    setNewSubtaskTitle('');
+    onUpdate({ ...task, title, subtasks: updatedSubtasks });
+  };
+
+  const toggleSubtask = (subtaskId) => {
+    const updatedSubtasks = subtasks.map(st => 
+      st.id === subtaskId ? { ...st, completed: !st.completed } : st
+    );
+    setSubtasks(updatedSubtasks);
+    onUpdate({ ...task, title, subtasks: updatedSubtasks });
+  };
+
+  const deleteSubtask = (subtaskId) => {
+    const updatedSubtasks = subtasks.filter(st => st.id !== subtaskId);
+    setSubtasks(updatedSubtasks);
+    onUpdate({ ...task, title, subtasks: updatedSubtasks });
+  };
+
+  const updateSubtaskTitle = (subtaskId, newTitle) => {
+      const updatedSubtasks = subtasks.map(st => 
+        st.id === subtaskId ? { ...st, title: newTitle } : st
+      );
+      setSubtasks(updatedSubtasks);
+      onUpdate({ ...task, title, subtasks: updatedSubtasks });
+  };
+
+  const completedCount = subtasks.filter(st => st.completed).length;
+  const progress = subtasks.length === 0 ? 0 : Math.round((completedCount / subtasks.length) * 100);
+
+  return (
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div 
+        ref={modalRef}
+        className="bg-white w-full max-w-lg rounded-none border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col max-h-[90vh]"
+      >
+        {/* Header */}
+        <div className="flex justify-between items-start p-4 border-b-2 border-black bg-[#FFC8A2]">
+          <div className="flex-1 mr-4">
+             <label className="block text-xs font-bold text-black/50 uppercase tracking-wide mb-1">Tâche</label>
+             <input 
+              value={title}
+              onChange={handleTitleChange}
+              className="w-full bg-transparent text-xl font-bold text-black placeholder-black/30 outline-none border-b-2 border-transparent focus:border-black transition-colors"
+              placeholder="Titre de la tâche"
+            />
+          </div>
+          <button onClick={onClose} className="text-black/60 hover:text-black transition-colors bg-white/50 hover:bg-white p-1 rounded-sm border-2 border-transparent hover:border-black">
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 overflow-y-auto">
+          
+          {/* Progress Bar */}
+          <div className="mb-6">
+            <div className="flex justify-between items-end mb-2">
+                <span className="text-sm font-bold text-black uppercase">Checklist</span>
+                <span className="text-xs font-bold text-black/60">{progress}% ({completedCount}/{subtasks.length})</span>
+            </div>
+            <div className="h-3 w-full bg-black/10 border-2 border-black rounded-full overflow-hidden">
+                <div 
+                    className="h-full bg-[#88D8B0] transition-all duration-300 ease-out border-r-2 border-black"
+                    style={{ width: `${progress}%`, display: progress === 0 ? 'none' : 'block' }}
+                ></div>
+            </div>
+          </div>
+
+          {/* Subtasks List */}
+          <div className="space-y-3 mb-6">
+            {subtasks.map((subtask) => (
+              <div key={subtask.id} className="group flex items-center gap-3 bg-gray-50 p-2 border-2 border-transparent hover:border-black/10 hover:bg-white transition-colors">
+                <button 
+                    onClick={() => toggleSubtask(subtask.id)}
+                    className={`flex-shrink-0 transition-colors ${subtask.completed ? 'text-[#88D8B0]' : 'text-black/20 hover:text-black/40'}`}
+                >
+                    {subtask.completed ? <CheckSquare size={20} className="text-black fill-[#88D8B0]" /> : <Square size={20} className="text-black" />}
+                </button>
+                <input 
+                    value={subtask.title}
+                    onChange={(e) => updateSubtaskTitle(subtask.id, e.target.value)}
+                    className={`flex-1 bg-transparent outline-none text-sm font-medium ${subtask.completed ? 'text-black/40 line-through' : 'text-black'}`}
+                />
+                <button 
+                    onClick={() => deleteSubtask(subtask.id)}
+                    className="opacity-0 group-hover:opacity-100 text-black/20 hover:text-red-500 transition-all p-1"
+                >
+                    <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Add Subtask Form */}
+          <form onSubmit={addSubtask} className="flex gap-2">
+             <input 
+                value={newSubtaskTitle}
+                onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                placeholder="Ajouter une sous-tâche..."
+                className="flex-1 bg-white border-2 border-black p-2 text-sm font-medium outline-none focus:shadow-[2px_2px_0px_0px_#000] transition-none placeholder-black/30"
+             />
+             <button 
+                type="submit" 
+                className="bg-black text-white p-2 border-2 border-black hover:bg-black/80 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+             >
+                <Plus size={20} />
+             </button>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  );
+}

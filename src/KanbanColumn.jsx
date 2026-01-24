@@ -4,7 +4,7 @@ import { Eraser } from 'lucide-react';
 import { TaskCard, CompletedTaskCard } from './TaskCard';
 
 // --- COMPOSANT COLONNE ---
-export function KanbanColumn({ col, tasks, deleteTask, toggleTask, updateTitle, clearCompleted }) {
+export function KanbanColumn({ col, tasks, deleteTask, toggleTask, updateTitle, clearCompleted, openTaskModal }) {
   const { setNodeRef } = useSortable({ id: col.id, data: { type: 'Column', col } });
   const activeTasks = tasks.filter(t => !t.completed);
   const completedTasks = tasks.filter(t => t.completed);
@@ -22,7 +22,7 @@ export function KanbanColumn({ col, tasks, deleteTask, toggleTask, updateTitle, 
      </div>
       <div className="flex-1 p-4">
         <SortableContext items={activeTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-          {activeTasks.map(task => <TaskCard key={task.id} task={task} deleteTask={deleteTask} toggleTask={toggleTask} updateTitle={updateTitle}/>)}
+          {activeTasks.map(task => <TaskCard key={task.id} task={task} deleteTask={deleteTask} toggleTask={toggleTask} updateTitle={updateTitle} openTaskModal={openTaskModal}/>)}
         </SortableContext>
       </div>
       {completedTasks.length > 0 && (

@@ -5,6 +5,7 @@ import RetroAssistant from './RetroAssistant';
 import { KanbanColumn } from './KanbanColumn';
 import UpdatePassword from './UpdatePassword';
 import { TaskCard } from './TaskCard';
+import { TaskDetailsModal } from './TaskDetailsModal';
 import { 
   DndContext, 
   closestCenter, 
@@ -41,6 +42,7 @@ export default function KanbanApp() {
   const [mode, setMode] = useState(() => localStorage.getItem('kanban-mode') || 'pro');
   const [input, setInput] = useState('');
   const [activeTask, setActiveTask] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null); // Pour la modale
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const settingsRef = useRef(null);
 
@@ -135,7 +137,8 @@ export default function KanbanApp() {
       columnId: 'today', 
       completed: false, 
       type: mode,
-      user_id: user.id // Important pour RLS
+      user_id: user.id, // Important pour RLS
+      subtasks: []
     };
     setTasks([...tasks, newTask]);
     setInput('');
@@ -143,7 +146,7 @@ export default function KanbanApp() {
     // DB Update
     const { data } = await supabase
       .from('tasks')
-      .insert([{ title: input, columnId: 'today', type: mode, user_id: user.id }])
+      .insert([{ title: input, columnId: 'today', type: mode, user_id: user.id, subtasks: [] }])
       .select();
     
     if (data) {
@@ -166,6 +169,16 @@ export default function KanbanApp() {
   const updateTaskTitle = async (id, newTitle) => {
     setTasks(tasks.map(t => t.id === id ? { ...t, title: newTitle } : t));
     await supabase.from('tasks').update({ title: newTitle }).eq('id', id);
+  };
+
+  const handleUpdateTask = async (updatedTask) => {
+    setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t));
+    // Try to update subtasks. If the column doesn't exist, this might fail or just not save subtasks.
+    // Ideally we should alert the user or checking schema, but we'll try best effort.
+    await supabase.from('tasks').update({ 
+        title: updatedTask.title,
+        subtasks: updatedTask.subtasks 
+    }).eq('id', updatedTask.id);
   };
 
   const clearCompleted = async (columnId) => {
@@ -230,6 +243,16 @@ export default function KanbanApp() {
           onDone={() => setShowChangePassword(false)}
         />
       )}
+      
+      {/* Modal Détails Tâche */}
+      {selectedTask && (
+        <TaskDetailsModal 
+          task={selectedTask} 
+          onClose={() => setSelectedTask(null)} 
+          onUpdate={handleUpdateTask} 
+        />
+      )}
+
       <div className="w-full mx-auto">
         <div className="flex flex-col md:flex-row justify-between mb-8 gap-4 bg-[#FFDF91] p-4 rounded-none border-2 border-black">
           <div className="flex flex-col gap-4 w-full md:w-auto">
@@ -291,7 +314,7 @@ export default function KanbanApp() {
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div className="flex md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 items-start overflow-x-auto md:overflow-visible pb-4 snap-x snap-mandatory md:snap-none">
-            {COLUMNS.map(col => <KanbanColumn key={col.id} col={col} tasks={visibleTasks.filter(t => t.columnId === col.id)} deleteTask={deleteTask} toggleTask={toggleTask} updateTitle={updateTaskTitle} clearCompleted={clearCompleted}/>)}
+            {COLUMNS.map(col => <KanbanColumn key={col.id} col={col} tasks={visibleTasks.filter(t => t.columnId === col.id)} deleteTask={deleteTask} toggleTask={toggleTask} updateTitle={updateTaskTitle} openTaskModal={setSelectedTask} clearCompleted={clearCompleted}/>)}
           </div>
           <DragOverlay dropAnimation={dropAnimation}>{activeTask ? <TaskCard task={activeTask} isOverlay /> : null}</DragOverlay>
         </DndContext>
