@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Plus, Trash2, CheckSquare, Square, GripVertical } from 'lucide-react';
 
-export function TaskDetailsModal({ task, onClose, onUpdate }) {
+export function TaskDetailsModal({ task, onClose, onUpdate, onDelete }) {
   const [title, setTitle] = useState(task.title);
   // Ensure subtasks is an array. If it's null/undefined, default to empty array.
   // If it's a JSON string (from DB), parse it (handled by parent usually, but good to be safe if passed raw).
@@ -76,6 +76,11 @@ export function TaskDetailsModal({ task, onClose, onUpdate }) {
   const completedCount = subtasks.filter(st => st.completed).length;
   const progress = subtasks.length === 0 ? 0 : Math.round((completedCount / subtasks.length) * 100);
 
+  const handleDeleteTask = () => {
+    onDelete(task.id);
+    // The parent now handles showing a confirmation and closing this modal.
+  };
+
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div 
@@ -86,16 +91,23 @@ export function TaskDetailsModal({ task, onClose, onUpdate }) {
         <div className="flex justify-between items-start p-4 border-b-2 border-black bg-[#FFC8A2]">
           <div className="flex-1 mr-4">
              <label className="block text-xs font-bold text-black/50 uppercase tracking-wide mb-1">Tâche</label>
-             <input 
+             <textarea 
               value={title}
-              onChange={handleTitleChange}
-              className="w-full bg-transparent text-xl font-bold text-black placeholder-black/30 outline-none border-b-2 border-transparent focus:border-black transition-colors"
+              onChange={(e) => { handleTitleChange(e); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
+              rows={1}
+              className="w-full bg-transparent text-xl font-bold text-black placeholder-black/30 outline-none border-b-2 border-transparent focus:border-black transition-colors resize-none overflow-hidden"
               placeholder="Titre de la tâche"
+              ref={(el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
             />
           </div>
-          <button onClick={onClose} className="text-black/60 hover:text-black transition-colors bg-white/50 hover:bg-white p-1 rounded-sm border-2 border-transparent hover:border-black">
-            <X size={24} />
-          </button>
+          <div className="flex gap-2">
+            <button onClick={handleDeleteTask} className="text-black/60 hover:text-red-600 transition-colors bg-white/50 hover:bg-white p-1 rounded-sm border-2 border-transparent hover:border-black" title="Supprimer la tâche">
+              <Trash2 size={20} />
+            </button>
+            <button onClick={onClose} className="text-black/60 hover:text-black transition-colors bg-white/50 hover:bg-white p-1 rounded-sm border-2 border-transparent hover:border-black">
+              <X size={24} />
+            </button>
+          </div>
         </div>
 
         {/* Body */}
@@ -118,21 +130,23 @@ export function TaskDetailsModal({ task, onClose, onUpdate }) {
           {/* Subtasks List */}
           <div className="space-y-3 mb-6">
             {subtasks.map((subtask) => (
-              <div key={subtask.id} className="group flex items-center gap-3 bg-gray-50 p-2 border-2 border-transparent hover:border-black/10 hover:bg-white transition-colors">
+              <div key={subtask.id} className="group flex items-start gap-3 bg-gray-50 p-2 border-2 border-transparent hover:border-black/10 hover:bg-white transition-colors">
                 <button 
                     onClick={() => toggleSubtask(subtask.id)}
-                    className={`flex-shrink-0 transition-colors ${subtask.completed ? 'text-[#88D8B0]' : 'text-black/20 hover:text-black/40'}`}
+                    className={`flex-shrink-0 transition-colors mt-1 ${subtask.completed ? 'text-[#88D8B0]' : 'text-black/20 hover:text-black/40'}`}
                 >
                     {subtask.completed ? <CheckSquare size={20} className="text-black fill-[#88D8B0]" /> : <Square size={20} className="text-black" />}
                 </button>
-                <input 
+                <textarea 
                     value={subtask.title}
-                    onChange={(e) => updateSubtaskTitle(subtask.id, e.target.value)}
-                    className={`flex-1 bg-transparent outline-none text-sm font-medium ${subtask.completed ? 'text-black/40 line-through' : 'text-black'}`}
+                    onChange={(e) => { updateSubtaskTitle(subtask.id, e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
+                    rows={1}
+                    className={`flex-1 bg-transparent outline-none text-sm font-medium resize-none overflow-hidden ${subtask.completed ? 'text-black/40 line-through' : 'text-black'}`}
+                    ref={(el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
                 />
                 <button 
                     onClick={() => deleteSubtask(subtask.id)}
-                    className="opacity-0 group-hover:opacity-100 text-black/20 hover:text-red-500 transition-all p-1"
+                    className="opacity-0 group-hover:opacity-100 text-black/20 hover:text-red-500 transition-all p-1 mt-0.5"
                 >
                     <Trash2 size={16} />
                 </button>

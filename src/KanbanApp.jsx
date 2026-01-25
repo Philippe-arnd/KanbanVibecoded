@@ -10,8 +10,9 @@ import {
   DndContext, 
   closestCenter, 
   useSensor, 
-  useSensors, 
-  PointerSensor,
+  useSensors,
+  MouseSensor,
+  TouchSensor,
   KeyboardSensor,
   DragOverlay,
   defaultDropAnimationSideEffects
@@ -20,7 +21,7 @@ import {
   arrayMove,
   sortableKeyboardCoordinates
 } from '@dnd-kit/sortable';
-import { Plus, Briefcase, Home, Loader2, LogOut, KeyRound, Github, Settings } from 'lucide-react';
+import { Plus, Briefcase, Home, Loader2, LogOut, KeyRound, Github, Settings, AlertTriangle } from 'lucide-react';
 
 // --- CONFIGURATION ---
 const COLUMNS = [
@@ -31,6 +32,35 @@ const COLUMNS = [
   { id: 'later', title: 'Plus tard', headerBg: 'bg-black/10' }, // Gris neutre
 ];
 
+// --- MODALE DE CONFIRMATION ---
+function ConfirmationModal({ message, onConfirm, onCancel }) {
+  return (
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="bg-white w-full max-w-sm rounded-none border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 text-center">
+        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 border-2 border-red-500 mb-4">
+            <AlertTriangle className="h-6 w-6 text-red-600" />
+        </div>
+        <h3 className="text-lg font-bold text-black">Confirmation requise</h3>
+        <p className="text-sm text-black/70 mt-2 mb-6">{message}</p>
+        <div className="flex gap-4 justify-center">
+          <button
+            onClick={onCancel}
+            className="px-6 py-2 bg-gray-200 text-black font-bold border-2 border-black hover:bg-gray-300 transition-colors shadow-[2px_2px_0px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+          >
+            Annuler
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-6 py-2 bg-red-500 text-white font-bold border-2 border-black hover:bg-red-600 transition-colors shadow-[2px_2px_0px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+          >
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // --- APP PRINCIPALE ---
 export default function KanbanApp() {
   const [session, setSession] = useState(null); // SESSION UTILISATEUR
@@ -38,6 +68,7 @@ export default function KanbanApp() {
   const [loading, setLoading] = useState(false);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [confirmation, setConfirmation] = useState(null); // { message, onConfirm }
   
   const [mode, setMode] = useState(() => localStorage.getItem('kanban-mode') || 'pro');
   const [input, setInput] = useState('');
@@ -91,7 +122,23 @@ export default function KanbanApp() {
     }
   }
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      // Require the mouse to move by 5 pixels before activating
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(TouchSensor, {
+      // Press delay of 250ms, with a tolerance of 5px of movement
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }));
 
   // Gère la vue de réinitialisation de mot de passe après clic sur le lien dans l'email
   if (isPasswordRecovery) {
@@ -154,15 +201,28 @@ export default function KanbanApp() {
     }
   };
 
-  const deleteTask = async (id) => {
-    setTasks(tasks.filter(t => t.id !== id));
-    await supabase.from('tasks').delete().eq('id', id);
+  const deleteTask = (id) => {
+    const taskToDelete = tasks.find(t => t.id === id);
+    if (!taskToDelete) return;
+
+    setConfirmation({
+      message: `Voulez-vous vraiment supprimer cette tâche ?`,
+      onConfirm: async () => {
+        // Close the details modal if it's open for this task
+        if (selectedTask && selectedTask.id === id) {
+          setSelectedTask(null);
+        }
+        setTasks(prevTasks => prevTasks.filter(t => t.id !== id));
+        await supabase.from('tasks').delete().eq('id', id);
+      }
+    });
   };
 
   const toggleTask = async (id) => {
     const task = tasks.find(t => t.id === id);
     const newStatus = !task.completed;
-    setTasks(tasks.map(t => t.id === id ? { ...t, completed: newStatus } : t));
+    // Using functional update for safety, though not strictly necessary here
+    setTasks(prevTasks => prevTasks.map(t => t.id === id ? { ...t, completed: newStatus } : t));
     await supabase.from('tasks').update({ completed: newStatus }).eq('id', id);
   };
 
@@ -172,20 +232,23 @@ export default function KanbanApp() {
   };
 
   const handleUpdateTask = async (updatedTask) => {
-    setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t));
+    setTasks(prevTasks => prevTasks.map(t => t.id === updatedTask.id ? updatedTask : t));
     await supabase.from('tasks').update({ 
         title: updatedTask.title,
         subtasks: updatedTask.subtasks 
     }).eq('id', updatedTask.id);
   };
 
-  const clearCompleted = async (columnId) => {
-    if(confirm('Supprimer toutes les tâches terminées de cette colonne ?')) {
-      const tasksToDelete = tasks.filter(t => (t.type || 'pro') === mode && t.columnId === columnId && t.completed);
-      const idsToDelete = tasksToDelete.map(t => t.id);
-      setTasks(tasks.filter(t => !idsToDelete.includes(t.id)));
-      await supabase.from('tasks').delete().in('id', idsToDelete);
-    }
+  const clearCompleted = (columnId) => {
+    setConfirmation({
+      message: 'Supprimer toutes les tâches terminées de cette colonne ?',
+      onConfirm: async () => {
+        const tasksToDelete = tasks.filter(t => (t.type || 'pro') === mode && t.columnId === columnId && t.completed);
+        const idsToDelete = tasksToDelete.map(t => t.id);
+        setTasks(prev => prev.filter(t => !idsToDelete.includes(t.id)));
+        await supabase.from('tasks').delete().in('id', idsToDelete);
+      }
+    });
   };
 
   // Drag & Drop (Identique)
@@ -241,6 +304,18 @@ export default function KanbanApp() {
           onDone={() => setShowChangePassword(false)}
         />
       )}
+
+      {/* Modal de Confirmation */}
+      {confirmation && (
+        <ConfirmationModal
+          message={confirmation.message}
+          onConfirm={() => {
+            confirmation.onConfirm();
+            setConfirmation(null);
+          }}
+          onCancel={() => setConfirmation(null)}
+        />
+      )}
       
       {/* Modal Détails Tâche */}
       {selectedTask && (
@@ -248,6 +323,7 @@ export default function KanbanApp() {
           task={selectedTask} 
           onClose={() => setSelectedTask(null)} 
           onUpdate={handleUpdateTask} 
+          onDelete={deleteTask}
         />
       )}
 

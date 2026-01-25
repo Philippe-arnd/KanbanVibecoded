@@ -1,10 +1,10 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Circle, Trash2, CheckCircle2, ListTodo, ExternalLink } from 'lucide-react';
+import { GripVertical, Circle, Trash2, CheckCircle2, ListTodo } from 'lucide-react';
 
 // --- COMPOSANT CARTE ---
-export function TaskCard({ task, deleteTask, toggleTask, updateTitle, isOverlay, openTaskModal }) {
+export function TaskCard({ task, toggleTask, updateTitle, isOverlay, openTaskModal }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ 
     id: task.id,
     data: { type: 'Task', task }
@@ -36,7 +36,7 @@ export function TaskCard({ task, deleteTask, toggleTask, updateTitle, isOverlay,
         <button onClick={() => toggleTask(task.id)} className="mt-1 text-black/60 hover:text-black transition-colors flex-shrink-0">
           <Circle size={20} />
         </button>
-        <div className="flex-1 pr-6 min-h-[24px]">
+        <div className="flex-1 min-h-[24px]">
           <div className="flex justify-between items-start gap-2">
             <span 
               onDoubleClick={() => openTaskModal(task)} 
@@ -45,26 +45,19 @@ export function TaskCard({ task, deleteTask, toggleTask, updateTitle, isOverlay,
             >
               {task.title}
             </span>
-            {/* Bouton pour ouvrir la modale sur mobile/tablette car le double-clic n'est pas intuitif */}
-            <button 
-              onClick={() => openTaskModal(task)}
-              className="md:hidden text-black/40 hover:text-black transition-colors flex-shrink-0 p-1"
-              title="Voir les détails"
-            >
-              <ExternalLink size={14} />
-            </button>
+            {subtasksCount > 0 && (
+              <div 
+                onClick={() => openTaskModal(task)}
+                className="flex items-center gap-1 text-[10px] font-bold text-black/50 bg-black/5 px-1.5 py-0.5 border border-black/10 rounded-sm flex-shrink-0 h-fit mt-0.5 cursor-pointer hover:bg-black/10 hover:text-black transition-colors"
+                title="Voir les détails"
+              >
+                <ListTodo size={12} />
+                <span>{completedSubtasksCount}/{subtasksCount}</span>
+              </div>
+            )}
           </div>
-          
-          <button 
-            onClick={() => openTaskModal(task)}
-            className="flex items-center gap-1.5 mt-2 text-[10px] font-bold uppercase tracking-wider text-black/40 hover:text-black hover:bg-black/10 transition-colors bg-black/5 w-fit px-1.5 py-0.5 border border-black/10"
-          >
-            <ListTodo size={12} />
-            <span>{completedSubtasksCount}/{subtasksCount}</span>
-          </button>
         </div>
       </div>
-      <button onClick={() => deleteTask(task.id)} className="absolute top-3 right-3 text-black/40 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={16}/></button>
     </div>
   );
 }
