@@ -95,7 +95,7 @@ export function TaskDetailsModal({ task, onClose, onUpdate, onDelete }) {
               value={title}
               onChange={(e) => { handleTitleChange(e); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
               rows={1}
-              className="w-full bg-transparent text-xl font-bold text-black placeholder-black/30 outline-none border-b-2 border-transparent focus:border-black transition-colors resize-none overflow-hidden"
+              className="w-full bg-transparent text-xl font-bold text-black placeholder-black/30 outline-none border-b-2 border-transparent focus:border-black transition-colors resize-none overflow-hidden break-words whitespace-pre-wrap"
               placeholder="Titre de la tâche"
               ref={(el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
             />
@@ -141,7 +141,7 @@ export function TaskDetailsModal({ task, onClose, onUpdate, onDelete }) {
                     value={subtask.title}
                     onChange={(e) => { updateSubtaskTitle(subtask.id, e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
                     rows={1}
-                    className={`flex-1 bg-transparent outline-none text-sm font-medium resize-none overflow-hidden ${subtask.completed ? 'text-black/40 line-through' : 'text-black'}`}
+                    className={`flex-1 bg-transparent outline-none text-sm font-medium resize-none overflow-hidden break-words whitespace-pre-wrap ${subtask.completed ? 'text-black/40 line-through' : 'text-black'}`}
                     ref={(el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
                 />
                 <button 

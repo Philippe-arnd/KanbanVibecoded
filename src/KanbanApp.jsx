@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from './supabaseClient';
-import Auth from './Auth'; // <-- On importe le composant Auth
+import Auth from './Auth';
 import RetroAssistant from './RetroAssistant';
 import { KanbanColumn } from './KanbanColumn';
 import UpdatePassword from './UpdatePassword';
 import { TaskCard } from './TaskCard';
 import { TaskDetailsModal } from './TaskDetailsModal';
+import { useAuth } from './hooks/useAuth';
+import { useTasks } from './hooks/useTasks';
 import { 
   DndContext, 
   closestCenter, 
@@ -18,10 +19,10 @@ import {
   defaultDropAnimationSideEffects
 } from '@dnd-kit/core';
 import { 
-  arrayMove,
   sortableKeyboardCoordinates
 } from '@dnd-kit/sortable';
 import { Plus, Briefcase, Home, Loader2, LogOut, KeyRound, Github, Settings, AlertTriangle } from 'lucide-react';
+import { supabase } from './supabaseClient'; // Still needed for UpdatePassword signout call if not wrapped, but useAuth handles main auth
 
 // --- CONFIGURATION ---
 const COLUMNS = [
@@ -63,10 +64,19 @@ function ConfirmationModal({ message, onConfirm, onCancel }) {
 
 // --- APP PRINCIPALE ---
 export default function KanbanApp() {
-  const [session, setSession] = useState(null); // SESSION UTILISATEUR
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  const { session, isPasswordRecovery, setIsPasswordRecovery, logout } = useAuth();
+  const { 
+    tasks, 
+    loading, 
+    addTask: addTaskHook, 
+    deleteTask: deleteTaskHook, 
+    toggleTask, 
+    updateTaskTitle, 
+    updateTask, 
+    clearCompletedTasks, 
+    moveTask 
+  } = useTasks(session);
+
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [confirmation, setConfirmation] = useState(null); // { message, onConfirm }
   
@@ -90,47 +100,13 @@ export default function KanbanApp() {
     };
   }, []);
 
-  // 1. Gestion de la Session Supabase
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (_event === "PASSWORD_RECOVERY") {
-        setIsPasswordRecovery(true);
-      }
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // 2. Chargement des données (Uniquement si session active)
-  useEffect(() => {
-    if (session) {
-      fetchTasks();
-    }
-  }, [session]); 
-
-  async function fetchTasks() {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase.from('tasks').select('*');
-      if (error) throw error;
-      setTasks(data || []);
-    } catch (error) {
-      console.error('Erreur chargement:', error.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   const sensors = useSensors(
     useSensor(MouseSensor, {
-      // Require the mouse to move by 5 pixels before activating
       activationConstraint: {
         distance: 5,
       },
     }),
     useSensor(TouchSensor, {
-      // Press delay of 250ms, with a tolerance of 5px of movement
       activationConstraint: {
         delay: 250,
         tolerance: 5,
@@ -149,7 +125,7 @@ export default function KanbanApp() {
         onDone={() => {
           setIsPasswordRecovery(false);
           // Déconnecte l'utilisateur pour qu'il se reconnecte avec son nouveau mot de passe
-          supabase.auth.signOut();
+          logout();
           window.location.hash = ''; // Nettoie l'URL
         }}
       />
@@ -164,47 +140,18 @@ export default function KanbanApp() {
   // --- LE RESTE DE L'APPLICATION (MODE CONNECTÉ) ---
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setTasks([]); // On vide le state local pour sécurité
+    await logout();
   };
 
   const visibleTasks = tasks.filter(t => (t.type || 'pro') === mode);
 
-  const addTask = async (e) => {
+  const handleAddTask = (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
-    
-    const user = session.user;
-
-    // UI Update
-    const tempId = Date.now().toString();
-    const newTask = { 
-      id: tempId, 
-      title: input, 
-      columnId: 'today', 
-      completed: false, 
-      type: mode,
-      user_id: user.id, // Important pour RLS
-      subtasks: []
-    };
-    setTasks([...tasks, newTask]);
+    addTaskHook(input, mode);
     setInput('');
-
-    // DB Update
-    const { data } = await supabase
-      .from('tasks')
-      .insert([{ title: input, columnId: 'today', type: mode, user_id: user.id, subtasks: [] }])
-      .select();
-    
-    if (data) {
-        setTasks(prev => prev.map(t => t.id === tempId ? data[0] : t));
-    }
   };
 
-  const deleteTask = (id) => {
-    const taskToDelete = tasks.find(t => t.id === id);
-    if (!taskToDelete) return;
-
+  const handleDeleteTask = (id) => {
     setConfirmation({
       message: `Voulez-vous vraiment supprimer cette tâche ?`,
       onConfirm: async () => {
@@ -212,46 +159,21 @@ export default function KanbanApp() {
         if (selectedTask && selectedTask.id === id) {
           setSelectedTask(null);
         }
-        setTasks(prevTasks => prevTasks.filter(t => t.id !== id));
-        await supabase.from('tasks').delete().eq('id', id);
+        await deleteTaskHook(id);
       }
     });
   };
 
-  const toggleTask = async (id) => {
-    const task = tasks.find(t => t.id === id);
-    const newStatus = !task.completed;
-    // Using functional update for safety, though not strictly necessary here
-    setTasks(prevTasks => prevTasks.map(t => t.id === id ? { ...t, completed: newStatus } : t));
-    await supabase.from('tasks').update({ completed: newStatus }).eq('id', id);
-  };
-
-  const updateTaskTitle = async (id, newTitle) => {
-    setTasks(tasks.map(t => t.id === id ? { ...t, title: newTitle } : t));
-    await supabase.from('tasks').update({ title: newTitle }).eq('id', id);
-  };
-
-  const handleUpdateTask = async (updatedTask) => {
-    setTasks(prevTasks => prevTasks.map(t => t.id === updatedTask.id ? updatedTask : t));
-    await supabase.from('tasks').update({ 
-        title: updatedTask.title,
-        subtasks: updatedTask.subtasks 
-    }).eq('id', updatedTask.id);
-  };
-
-  const clearCompleted = (columnId) => {
+  const handleClearCompleted = (columnId) => {
     setConfirmation({
       message: 'Supprimer toutes les tâches terminées de cette colonne ?',
       onConfirm: async () => {
-        const tasksToDelete = tasks.filter(t => (t.type || 'pro') === mode && t.columnId === columnId && t.completed);
-        const idsToDelete = tasksToDelete.map(t => t.id);
-        setTasks(prev => prev.filter(t => !idsToDelete.includes(t.id)));
-        await supabase.from('tasks').delete().in('id', idsToDelete);
+        await clearCompletedTasks(columnId, mode);
       }
     });
   };
 
-  // Drag & Drop (Identique)
+  // Drag & Drop
   const handleDragStart = (event) => {
     if (event.active.data.current?.type === 'Task') {
       setActiveTask(event.active.data.current.task);
@@ -262,38 +184,13 @@ export default function KanbanApp() {
     setActiveTask(null);
     const { active, over } = event;
     if (!over) return;
-    const activeId = active.id;
-    const overId = over.id;
-    const activeTask = tasks.find(t => t.id === activeId);
     
-    const isOverColumn = COLUMNS.some(c => c.id === overId);
-    if (isOverColumn && activeTask) {
-       if (activeTask.columnId !== overId) {
-         setTasks(tasks.map(t => t.id === activeId ? { ...t, columnId: overId } : t));
-         await supabase.from('tasks').update({ columnId: overId }).eq('id', activeId);
-       }
-       return;
-    }
-
-    const overTask = tasks.find(t => t.id === overId);
-    if (overTask && activeTask) {
-      if (activeTask.columnId !== overTask.columnId) {
-        setTasks(tasks.map(t => t.id === activeId ? { ...t, columnId: overTask.columnId } : t));
-        await supabase.from('tasks').update({ columnId: overTask.columnId }).eq('id', activeId);
-      } else {
-        const oldIndex = tasks.findIndex(t => t.id === activeId);
-        const newIndex = tasks.findIndex(t => t.id === overId);
-        setTasks(arrayMove(tasks, oldIndex, newIndex));
-      }
-    }
+    await moveTask(active.id, over.id, COLUMNS);
   };
 
   const dropAnimation = { sideEffects: defaultDropAnimationSideEffects({ styles: { active: { opacity: '0.5' } } }) };
   
   const isPro = mode === 'pro';
-  const titleClass = isPro ? 'text-indigo-600' : 'text-emerald-600';
-  const inputClass = isPro ? "bg-gray-50 border border-gray-200 p-3 rounded-xl w-full md:w-80 outline-none focus:ring-2 focus:ring-indigo-500 transition" : "bg-gray-50 border border-gray-200 p-3 rounded-xl w-full md:w-80 outline-none focus:ring-2 focus:ring-emerald-500 transition";
-  const buttonClass = isPro ? "bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-xl font-bold transition shadow-lg shadow-indigo-200" : "bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-xl font-bold transition shadow-lg shadow-emerald-200";
 
   return (
     <div className="p-4 md:p-8 bg-[#586A7A] min-h-screen font-sans flex flex-col">
@@ -322,8 +219,8 @@ export default function KanbanApp() {
         <TaskDetailsModal 
           task={selectedTask} 
           onClose={() => setSelectedTask(null)} 
-          onUpdate={handleUpdateTask} 
-          onDelete={deleteTask}
+          onUpdate={updateTask} 
+          onDelete={handleDeleteTask}
         />
       )}
 
@@ -378,7 +275,7 @@ export default function KanbanApp() {
           </div>
           
           <div className="flex flex-col md:flex-row gap-2 md:items-center">
-            <form onSubmit={addTask} className="flex gap-2 items-center w-full md:w-auto">
+            <form onSubmit={handleAddTask} className="flex gap-2 items-center w-full md:w-auto">
               <input value={input} onChange={e => setInput(e.target.value)} className="bg-white p-3 rounded-none w-full md:w-80 outline-none border-2 border-black focus:shadow-[2px_2px_0px_0px_#000] transition-none" placeholder={`Nouvelle tâche ${isPro ? 'Pro' : 'Perso'}...`} />
               <button type="submit" className="bg-[#88D8B0] text-black p-3 rounded-none font-bold border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none" disabled={loading}><Plus /></button>
             </form>
@@ -388,7 +285,7 @@ export default function KanbanApp() {
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div className="flex md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 items-start overflow-x-auto md:overflow-visible pb-4 snap-x snap-mandatory md:snap-none">
-            {COLUMNS.map(col => <KanbanColumn key={col.id} col={col} tasks={visibleTasks.filter(t => t.columnId === col.id)} deleteTask={deleteTask} toggleTask={toggleTask} updateTitle={updateTaskTitle} openTaskModal={setSelectedTask} clearCompleted={clearCompleted}/>)}
+            {COLUMNS.map(col => <KanbanColumn key={col.id} col={col} tasks={visibleTasks.filter(t => t.columnId === col.id)} deleteTask={handleDeleteTask} toggleTask={toggleTask} updateTitle={updateTaskTitle} openTaskModal={setSelectedTask} clearCompleted={handleClearCompleted}/>)}
           </div>
           <DragOverlay dropAnimation={dropAnimation}>{activeTask ? <TaskCard task={activeTask} isOverlay /> : null}</DragOverlay>
         </DndContext>

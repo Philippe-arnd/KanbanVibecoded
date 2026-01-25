@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Circle, Trash2, CheckCircle2, ListTodo } from 'lucide-react';
 
 // --- COMPOSANT CARTE ---
-export function TaskCard({ task, toggleTask, updateTitle, isOverlay, openTaskModal }) {
+export const TaskCard = React.memo(function TaskCard({ task, toggleTask, updateTitle, isOverlay, openTaskModal }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ 
     id: task.id,
     data: { type: 'Task', task }
@@ -60,10 +60,10 @@ export function TaskCard({ task, toggleTask, updateTitle, isOverlay, openTaskMod
       </div>
     </div>
   );
-}
+});
 
 // --- COMPOSANT TÂCHE TERMINÉE ---
-export function CompletedTaskCard({ task, deleteTask, toggleTask }) {
+export const CompletedTaskCard = React.memo(function CompletedTaskCard({ task, deleteTask, toggleTask }) {
   return (
     <div className="bg-black/5 p-3 mb-2 rounded-none border-2 border-dashed border-black/20 opacity-75 group flex items-start gap-3">
       <button onClick={() => toggleTask(task.id)} className="mt-1 text-green-600 hover:text-black transition-colors flex-shrink-0"><CheckCircle2 size={20} /></button>
@@ -71,4 +71,4 @@ export function CompletedTaskCard({ task, deleteTask, toggleTask }) {
       <button onClick={() => deleteTask(task.id)} className="text-black/30 hover:text-red-500"><Trash2 size={16}/></button>
     </div>
   );
-}
+});

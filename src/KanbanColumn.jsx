@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Eraser } from 'lucide-react';
 import { TaskCard, CompletedTaskCard } from './TaskCard';
 
 // --- COMPOSANT COLONNE ---
-export function KanbanColumn({ col, tasks, deleteTask, toggleTask, updateTitle, clearCompleted, openTaskModal }) {
+export const KanbanColumn = React.memo(function KanbanColumn({ col, tasks, deleteTask, toggleTask, updateTitle, clearCompleted, openTaskModal }) {
   const { setNodeRef } = useSortable({ id: col.id, data: { type: 'Column', col } });
-  const activeTasks = tasks.filter(t => !t.completed);
-  const completedTasks = tasks.filter(t => t.completed);
+  
+  const activeTasks = useMemo(() => tasks.filter(t => !t.completed), [tasks]);
+  const completedTasks = useMemo(() => tasks.filter(t => t.completed), [tasks]);
 
  return (
     <div ref={setNodeRef} className={`bg-[#E0EBDD] rounded-none border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] min-h-[500px] flex flex-col min-w-[280px] md:min-w-0 snap-center`}>
@@ -37,4 +38,4 @@ export function KanbanColumn({ col, tasks, deleteTask, toggleTask, updateTitle, 
       )}
     </div>
   );
-}
+});
