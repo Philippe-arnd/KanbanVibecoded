@@ -127,6 +127,22 @@ export function TaskDetailsModal({ task, onClose, onUpdate, onDelete }) {
             </div>
           </div>
 
+          {/* Add Subtask Form */}
+          <form onSubmit={addSubtask} className="flex gap-2 mb-4">
+             <input 
+                value={newSubtaskTitle}
+                onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                placeholder="Ajouter une sous-tâche..."
+                className="flex-1 bg-white border-2 border-black p-2 text-sm font-medium outline-none focus:shadow-[2px_2px_0px_0px_#000] transition-none placeholder-black/30"
+             />
+             <button 
+                type="submit" 
+                className="bg-black text-white p-2 border-2 border-black hover:bg-black/80 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+             >
+                <Plus size={20} />
+             </button>
+          </form>
+
           {/* Subtasks List */}
           <div className="space-y-3 mb-6">
             {subtasks.map((subtask) => (
@@ -153,22 +169,6 @@ export function TaskDetailsModal({ task, onClose, onUpdate, onDelete }) {
               </div>
             ))}
           </div>
-
-          {/* Add Subtask Form */}
-          <form onSubmit={addSubtask} className="flex gap-2">
-             <input 
-                value={newSubtaskTitle}
-                onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                placeholder="Ajouter une sous-tâche..."
-                className="flex-1 bg-white border-2 border-black p-2 text-sm font-medium outline-none focus:shadow-[2px_2px_0px_0px_#000] transition-none placeholder-black/30"
-             />
-             <button 
-                type="submit" 
-                className="bg-black text-white p-2 border-2 border-black hover:bg-black/80 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
-             >
-                <Plus size={20} />
-             </button>
-          </form>
 
         </div>
       </div>

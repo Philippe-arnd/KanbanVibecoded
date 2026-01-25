@@ -133,6 +133,7 @@ export function useTasks(session) {
 
   return {
     tasks,
+    setTasks,
     loading,
     addTask,
     deleteTask,

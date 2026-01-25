@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Auth from './Auth';
 import RetroAssistant from './RetroAssistant';
 import { KanbanColumn } from './KanbanColumn';
@@ -9,17 +9,21 @@ import { useAuth } from './hooks/useAuth';
 import { useTasks } from './hooks/useTasks';
 import { 
   DndContext, 
-  closestCenter, 
+  closestCorners, 
   useSensor, 
   useSensors,
   MouseSensor,
   TouchSensor,
   KeyboardSensor,
   DragOverlay,
-  defaultDropAnimationSideEffects
+  defaultDropAnimationSideEffects,
+  pointerWithin,
+  rectIntersection,
+  getFirstCollision
 } from '@dnd-kit/core';
 import { 
-  sortableKeyboardCoordinates
+  sortableKeyboardCoordinates,
+  arrayMove
 } from '@dnd-kit/sortable';
 import { Plus, Briefcase, Home, Loader2, LogOut, KeyRound, Github, Settings, AlertTriangle } from 'lucide-react';
 import { supabase } from './supabaseClient'; // Still needed for UpdatePassword signout call if not wrapped, but useAuth handles main auth
@@ -67,6 +71,7 @@ export default function KanbanApp() {
   const { session, isPasswordRecovery, setIsPasswordRecovery, logout } = useAuth();
   const { 
     tasks, 
+    setTasks,
     loading, 
     addTask: addTaskHook, 
     deleteTask: deleteTaskHook, 
@@ -108,13 +113,26 @@ export default function KanbanApp() {
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 250,
-        tolerance: 5,
+        delay: 200,
+        tolerance: 6,
       },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }));
+
+  const collisionDetectionStrategy = useCallback((args) => {
+    // First, let's see if there are any collisions with the pointer
+    const pointerCollisions = pointerWithin(args);
+    
+    // If there are pointer collisions, return them
+    if (pointerCollisions.length > 0) {
+      return pointerCollisions;
+    }
+
+    // If there are no pointer collisions, return the closest corners
+    return closestCorners(args);
+  }, []);
 
   // Gère la vue de réinitialisation de mot de passe après clic sur le lien dans l'email
   if (isPasswordRecovery) {
@@ -175,17 +193,72 @@ export default function KanbanApp() {
 
   // Drag & Drop
   const handleDragStart = (event) => {
-    if (event.active.data.current?.type === 'Task') {
-      setActiveTask(event.active.data.current.task);
+    const { active } = event;
+    if (active.data.current?.type === 'Task') {
+      setActiveTask(active.data.current.task);
+    }
+  };
+
+  const handleDragOver = (event) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    if (activeId === overId) return;
+
+    const isActiveATask = active.data.current?.type === 'Task';
+    const isOverATask = over.data.current?.type === 'Task';
+    const isOverAColumn = over.data.current?.type === 'Column' || COLUMNS.some(c => c.id === overId);
+
+    if (!isActiveATask) return;
+
+    // Immediat visual feedback for cross-column movement
+    const activeTaskObj = tasks.find(t => t.id === activeId);
+    if (!activeTaskObj) return;
+
+    if (isOverATask) {
+      const overTaskObj = tasks.find(t => t.id === overId);
+      if (overTaskObj && activeTaskObj.columnId !== overTaskObj.columnId) {
+        setTasks(prev => {
+          const activeIndex = prev.findIndex(t => t.id === activeId);
+          const overIndex = prev.findIndex(t => t.id === overId);
+          
+          const updatedTasks = [...prev];
+          updatedTasks[activeIndex] = { ...updatedTasks[activeIndex], columnId: overTaskObj.columnId };
+          
+          return arrayMove(updatedTasks, activeIndex, overIndex);
+        });
+      }
+    }
+
+    if (isOverAColumn) {
+      const columnId = over.data.current?.col?.id || overId;
+      if (activeTaskObj.columnId !== columnId) {
+        setTasks(prev => {
+          const activeIndex = prev.findIndex(t => t.id === activeId);
+          const updatedTasks = [...prev];
+          updatedTasks[activeIndex] = { ...updatedTasks[activeIndex], columnId };
+          
+          return arrayMove(updatedTasks, activeIndex, activeIndex); // Triggers re-render
+        });
+      }
     }
   };
 
   const handleDragEnd = async (event) => {
-    setActiveTask(null);
     const { active, over } = event;
+    setActiveTask(null);
+    
     if (!over) return;
     
-    await moveTask(active.id, over.id, COLUMNS);
+    const activeId = active.id;
+    const overId = over.id;
+
+    // The state might have already been updated by handleDragOver
+    // We call moveTask to persist changes to DB
+    await moveTask(activeId, overId, COLUMNS);
   };
 
   const dropAnimation = { sideEffects: defaultDropAnimationSideEffects({ styles: { active: { opacity: '0.5' } } }) };
@@ -283,8 +356,8 @@ export default function KanbanApp() {
           </div>
         </div>
 
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="flex md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 items-start overflow-x-auto md:overflow-visible pb-4 snap-x snap-mandatory md:snap-none">
+        <DndContext sensors={sensors} collisionDetection={collisionDetectionStrategy} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
+          <div className="flex md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 items-start overflow-x-auto md:overflow-visible pb-4 snap-x snap-proximity md:snap-none">
             {COLUMNS.map(col => <KanbanColumn key={col.id} col={col} tasks={visibleTasks.filter(t => t.columnId === col.id)} deleteTask={handleDeleteTask} toggleTask={toggleTask} updateTitle={updateTaskTitle} openTaskModal={setSelectedTask} clearCompleted={handleClearCompleted}/>)}
           </div>
           <DragOverlay dropAnimation={dropAnimation}>{activeTask ? <TaskCard task={activeTask} isOverlay /> : null}</DragOverlay>
