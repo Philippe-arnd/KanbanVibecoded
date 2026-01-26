@@ -65,6 +65,18 @@ export function useTasks(session) {
     if (error) console.error("Error deleting task:", error);
   };
 
+  const deleteSubtask = async (taskId, subtaskId) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const updatedSubtasks = (task.subtasks || []).filter(st => st.id !== subtaskId);
+    
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, subtasks: updatedSubtasks } : t));
+    
+    const { error } = await supabase.from('tasks').update({ subtasks: updatedSubtasks }).eq('id', taskId);
+    if (error) console.error("Error deleting subtask:", error);
+  };
+
   const toggleTask = async (id) => {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
@@ -161,6 +173,7 @@ export function useTasks(session) {
     setTasks,
     loading,
     addTask,
+    deleteSubtask,
     deleteTask,
     toggleTask,
     updateTaskTitle,
