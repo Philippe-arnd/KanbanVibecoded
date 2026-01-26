@@ -17,7 +17,7 @@ export function useTasks(session) {
   async function fetchTasks() {
     try {
       setLoading(true);
-      const { data, error } = await supabase.from('tasks').select('*');
+      const { data, error } = await supabase.from('tasks').select('*').order('position', { ascending: true });
       if (error) throw error;
       setTasks(data || []);
     } catch (error) {
@@ -39,7 +39,8 @@ export function useTasks(session) {
       completed: false, 
       type: mode,
       user_id: user.id,
-      subtasks: []
+      subtasks: [],
+      position: Date.now()
     };
     
     // Optimistic update
@@ -98,36 +99,60 @@ export function useTasks(session) {
     if (error) console.error("Error clearing completed tasks:", error);
   };
 
-  const moveTask = async (activeId, overId, columns) => {
-    const activeTask = tasks.find(t => t.id === activeId);
-    if (!activeTask) return;
+  const moveTask = (active, over) => {
+    setTasks(originalTasks => {
+      const activeId = active.id;
+      const overId = over.id;
 
-    // Case 1: Dropped over a column
-    const isOverColumn = columns.some(c => c.id === overId);
-    if (isOverColumn) {
-       if (activeTask.columnId !== overId) {
-         setTasks(prev => prev.map(t => t.id === activeId ? { ...t, columnId: overId } : t));
-         await supabase.from('tasks').update({ columnId: overId }).eq('id', activeId);
-       }
-       return;
-    }
+      const oldIndex = originalTasks.findIndex(t => t.id === activeId);
+      const newIndex = originalTasks.findIndex(t => t.id === overId);
 
-    // Case 2: Dropped over another task
-    const overTask = tasks.find(t => t.id === overId);
-    if (overTask) {
-      if (activeTask.columnId !== overTask.columnId) {
-        // Move to new column
-        setTasks(prev => prev.map(t => t.id === activeId ? { ...t, columnId: overTask.columnId } : t));
-        await supabase.from('tasks').update({ columnId: overTask.columnId }).eq('id', activeId);
-      } else {
-        // Reorder within same column (just local state reorder for now, assuming no specific order field in DB yet)
-        // If DB has 'order' field, we would update it here. For now, we rely on array order.
-        // Note: Without an 'order' field in DB, the reordering won't persist on refresh if we sort by something else.
-        // But fulfilling the current logic:
-        const oldIndex = tasks.findIndex(t => t.id === activeId);
-        const newIndex = tasks.findIndex(t => t.id === overId);
-        setTasks(prev => arrayMove(prev, oldIndex, newIndex));
+      const isOverAColumn = over.data.current?.type === 'Column';
+
+      if (oldIndex === -1 || (!isOverAColumn && newIndex === -1)) {
+        return originalTasks;
       }
+
+      // 1. Determine the new column ID and perform the reorder for optimistic UI
+      const newColumnId = isOverAColumn ? overId : originalTasks[newIndex].columnId;
+      const reorderedTasks = arrayMove(originalTasks, oldIndex, newIndex);
+
+      // 2. Calculate new position
+      const tasksInNewColumn = reorderedTasks.filter(t => t.columnId === newColumnId || t.id === activeId);
+      const finalIndexInColumn = tasksInNewColumn.findIndex(t => t.id === activeId);
+
+      const prevTask = tasksInNewColumn[finalIndexInColumn - 1];
+      const nextTask = tasksInNewColumn[finalIndexInColumn + 1];
+
+      let newPosition;
+      if (tasksInNewColumn.length === 1) {
+        newPosition = Date.now();
+      } else if (finalIndexInColumn === 0) {
+        newPosition = nextTask.position / 2;
+      } else if (finalIndexInColumn === tasksInNewColumn.length - 1) {
+        newPosition = prevTask.position + 1000;
+      } else {
+        newPosition = (prevTask.position + nextTask.position) / 2;
+      }
+
+      // 3. Create the final tasks array with the updated task
+      const finalTasks = reorderedTasks.map(t => 
+        t.id === activeId ? { ...t, columnId: newColumnId, position: newPosition } : t
+      );
+      
+      // 4. Asynchronously persist the change
+      persistTaskMove(activeId, newColumnId, newPosition, originalTasks);
+
+      // 5. Return the new state for an optimistic update
+      return finalTasks;
+    });
+  };
+
+  const persistTaskMove = async (taskId, newColumnId, newPosition, originalTasks) => {
+    const { error } = await supabase.from('tasks').update({ columnId: newColumnId, position: newPosition }).eq('id', taskId);
+    if (error) {
+      console.error("Error moving task:", error);
+      setTasks(originalTasks); // Revert on error
     }
   };
 
@@ -141,6 +166,6 @@ export function useTasks(session) {
     updateTaskTitle,
     updateTask,
     clearCompletedTasks,
-    moveTask
+    moveTask,
   };
 }

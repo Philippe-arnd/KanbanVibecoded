@@ -117,7 +117,21 @@ export function TaskDetailsModal({ task, onClose, onUpdate, onDelete }) {
           <div className="mb-6">
             <div className="flex justify-between items-end mb-2">
                 <span className="text-sm font-bold text-black uppercase">Checklist</span>
-                <span className="text-xs font-bold text-black/60">{progress}% ({completedCount}/{subtasks.length})</span>
+                <div className="flex items-center gap-2">
+                  {completedCount > 0 && (
+                    <button 
+                      onClick={() => {
+                        const updatedSubtasks = subtasks.filter(st => !st.completed);
+                        setSubtasks(updatedSubtasks);
+                        onUpdate({ ...task, title, subtasks: updatedSubtasks });
+                      }}
+                      className="text-[10px] font-bold text-black/40 hover:text-red-500 uppercase transition-colors"
+                    >
+                      Effacer terminés
+                    </button>
+                  )}
+                  <span className="text-xs font-bold text-black/60">{progress}% ({completedCount}/{subtasks.length})</span>
+                </div>
             </div>
             <div className="h-3 w-full bg-black/10 border-2 border-black rounded-full overflow-hidden">
                 <div 

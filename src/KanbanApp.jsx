@@ -182,13 +182,8 @@ export default function KanbanApp() {
     });
   };
 
-  const handleClearCompleted = (columnId) => {
-    setConfirmation({
-      message: 'Supprimer toutes les tâches terminées de cette colonne ?',
-      onConfirm: async () => {
-        await clearCompletedTasks(columnId, mode);
-      }
-    });
+  const handleClearCompleted = async (columnId) => {
+    await clearCompletedTasks(columnId, mode);
   };
 
   // Drag & Drop
@@ -200,65 +195,20 @@ export default function KanbanApp() {
   };
 
   const handleDragOver = (event) => {
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeId = active.id;
-    const overId = over.id;
-
-    if (activeId === overId) return;
-
-    const isActiveATask = active.data.current?.type === 'Task';
-    const isOverATask = over.data.current?.type === 'Task';
-    const isOverAColumn = over.data.current?.type === 'Column' || COLUMNS.some(c => c.id === overId);
-
-    if (!isActiveATask) return;
-
-    // Immediat visual feedback for cross-column movement
-    const activeTaskObj = tasks.find(t => t.id === activeId);
-    if (!activeTaskObj) return;
-
-    if (isOverATask) {
-      const overTaskObj = tasks.find(t => t.id === overId);
-      if (overTaskObj && activeTaskObj.columnId !== overTaskObj.columnId) {
-        setTasks(prev => {
-          const activeIndex = prev.findIndex(t => t.id === activeId);
-          const overIndex = prev.findIndex(t => t.id === overId);
-          
-          const updatedTasks = [...prev];
-          updatedTasks[activeIndex] = { ...updatedTasks[activeIndex], columnId: overTaskObj.columnId };
-          
-          return arrayMove(updatedTasks, activeIndex, overIndex);
-        });
-      }
-    }
-
-    if (isOverAColumn) {
-      const columnId = over.data.current?.col?.id || overId;
-      if (activeTaskObj.columnId !== columnId) {
-        setTasks(prev => {
-          const activeIndex = prev.findIndex(t => t.id === activeId);
-          const updatedTasks = [...prev];
-          updatedTasks[activeIndex] = { ...updatedTasks[activeIndex], columnId };
-          
-          return arrayMove(updatedTasks, activeIndex, activeIndex); // Triggers re-render
-        });
-      }
-    }
+    // To simplify state management and ensure correct position calculation,
+    // all drag logic is now handled in `onDragEnd`. `onDragOver` is kept
+    // for potential future use, like custom visual feedback during drag.
   };
 
   const handleDragEnd = async (event) => {
     const { active, over } = event;
     setActiveTask(null);
     
-    if (!over) return;
-    
-    const activeId = active.id;
-    const overId = over.id;
-
-    // The state might have already been updated by handleDragOver
-    // We call moveTask to persist changes to DB
-    await moveTask(activeId, overId, COLUMNS);
+    if (over && active.id !== over.id) {
+      // Let the useTasks hook handle all the logic for moving and persisting.
+      // It will optimistically update the UI and then send the request.
+      moveTask(active, over);
+    }
   };
 
   const dropAnimation = { sideEffects: defaultDropAnimationSideEffects({ styles: { active: { opacity: '0.5' } } }) };
