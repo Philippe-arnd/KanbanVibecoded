@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Plus, Trash2, CheckSquare, Square, GripVertical } from 'lucide-react';
+import { X, Plus, Trash2, CheckSquare, Square, GripVertical, Eraser } from 'lucide-react';
 
 export function TaskDetailsModal({ task, onClose, onUpdate, onDelete }) {
   const [title, setTitle] = useState(task.title);
@@ -22,12 +22,6 @@ export function TaskDetailsModal({ task, onClose, onUpdate, onDelete }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [onClose]);
-
-  // Sync state when task prop changes (if switching tasks without closing)
-  useEffect(() => {
-    setTitle(task.title);
-    setSubtasks(Array.isArray(task.subtasks) ? task.subtasks : []);
-  }, [task]);
 
   const handleTitleChange = (e) => {
     const newTitle = e.target.value;
@@ -90,18 +84,37 @@ export function TaskDetailsModal({ task, onClose, onUpdate, onDelete }) {
         {/* Header */}
         <div className="flex justify-between items-start p-4 border-b-2 border-black bg-[#FFC8A2]">
           <div className="flex-1 mr-4">
-             <label className="block text-xs font-bold text-black/50 uppercase tracking-wide mb-1">Tâche</label>
+             <label className="block text-xs font-bold text-black/50 uppercase tracking-wide mb-1">Task</label>
              <textarea 
               value={title}
               onChange={(e) => { handleTitleChange(e); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  e.target.blur();
+                }
+              }}
               rows={1}
               className="w-full bg-transparent text-xl font-bold text-black placeholder-black/30 outline-none border-b-2 border-transparent focus:border-black transition-colors resize-none overflow-hidden break-words whitespace-pre-wrap"
-              placeholder="Titre de la tâche"
+              placeholder="Task title"
               ref={(el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
             />
           </div>
           <div className="flex gap-2">
-            <button onClick={handleDeleteTask} className="text-black/60 hover:text-red-600 transition-colors bg-white/50 hover:bg-white p-1 rounded-sm border-2 border-transparent hover:border-black" title="Supprimer la tâche">
+            {completedCount > 0 && (
+              <button 
+                onClick={() => {
+                  const updatedSubtasks = subtasks.filter(st => !st.completed);
+                  setSubtasks(updatedSubtasks);
+                  onUpdate({ ...task, title, subtasks: updatedSubtasks });
+                }}
+                className="text-black/60 hover:text-red-600 transition-colors bg-white/50 hover:bg-white p-1 rounded-sm border-2 border-transparent hover:border-black"
+                title="Clear completed subtasks"
+              >
+                <Eraser size={20} />
+              </button>
+            )}
+            <button onClick={handleDeleteTask} className="text-black/60 hover:text-red-600 transition-colors bg-white/50 hover:bg-white p-1 rounded-sm border-2 border-transparent hover:border-black" title="Delete task">
               <Trash2 size={20} />
             </button>
             <button onClick={onClose} className="text-black/60 hover:text-black transition-colors bg-white/50 hover:bg-white p-1 rounded-sm border-2 border-transparent hover:border-black">
@@ -118,18 +131,6 @@ export function TaskDetailsModal({ task, onClose, onUpdate, onDelete }) {
             <div className="flex justify-between items-end mb-2">
                 <span className="text-sm font-bold text-black uppercase">Checklist</span>
                 <div className="flex items-center gap-2">
-                  {completedCount > 0 && (
-                    <button 
-                      onClick={() => {
-                        const updatedSubtasks = subtasks.filter(st => !st.completed);
-                        setSubtasks(updatedSubtasks);
-                        onUpdate({ ...task, title, subtasks: updatedSubtasks });
-                      }}
-                      className="text-[10px] font-bold text-black/40 hover:text-red-500 uppercase transition-colors"
-                    >
-                      Effacer terminés
-                    </button>
-                  )}
                   <span className="text-xs font-bold text-black/60">{progress}% ({completedCount}/{subtasks.length})</span>
                 </div>
             </div>
@@ -146,7 +147,7 @@ export function TaskDetailsModal({ task, onClose, onUpdate, onDelete }) {
              <input 
                 value={newSubtaskTitle}
                 onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                placeholder="Ajouter une sous-tâche..."
+                placeholder="Add a subtask..."
                 className="flex-1 bg-white border-2 border-black p-2 text-sm font-medium outline-none focus:shadow-[2px_2px_0px_0px_#000] transition-none placeholder-black/30"
              />
              <button 
@@ -170,6 +171,12 @@ export function TaskDetailsModal({ task, onClose, onUpdate, onDelete }) {
                 <textarea 
                     value={subtask.title}
                     onChange={(e) => { updateSubtaskTitle(subtask.id, e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.target.blur();
+                      }
+                    }}
                     rows={1}
                     className={`flex-1 bg-transparent outline-none text-sm font-medium resize-none overflow-hidden break-words whitespace-pre-wrap ${subtask.completed ? 'text-black/40 line-through' : 'text-black'}`}
                     ref={(el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}

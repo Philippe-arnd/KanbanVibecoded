@@ -17,27 +17,23 @@ import {
   KeyboardSensor,
   DragOverlay,
   defaultDropAnimationSideEffects,
-  pointerWithin,
-  rectIntersection,
-  getFirstCollision
+  pointerWithin
 } from '@dnd-kit/core';
 import { 
-  sortableKeyboardCoordinates,
-  arrayMove
+  sortableKeyboardCoordinates
 } from '@dnd-kit/sortable';
 import { Plus, Briefcase, Home, Loader2, LogOut, KeyRound, Github, Settings, AlertTriangle } from 'lucide-react';
-import { supabase } from './supabaseClient'; // Still needed for UpdatePassword signout call if not wrapped, but useAuth handles main auth
 
 // --- CONFIGURATION ---
 const COLUMNS = [
-  { id: 'today', title: "Aujourd'hui", headerBg: 'bg-[#FFC8A2]' }, // Saumon
-  { id: 'tomorrow', title: 'Demain', headerBg: 'bg-[#FFDF91]' }, // Jaune
-  { id: 'week', title: 'Cette semaine', headerBg: 'bg-[#89CFF0]' }, // Bleu Ciel
-  { id: 'month', title: 'Ce mois', headerBg: 'bg-[#88D8B0]' }, // Vert Menthe
-  { id: 'later', title: 'Plus tard', headerBg: 'bg-black/10' }, // Gris neutre
+  { id: 'today', title: "Today", headerBg: 'bg-[#FFC8A2]' }, // Salmon
+  { id: 'tomorrow', title: 'Tomorrow', headerBg: 'bg-[#FFDF91]' }, // Yellow
+  { id: 'week', title: 'This Week', headerBg: 'bg-[#89CFF0]' }, // Sky Blue
+  { id: 'month', title: 'This Month', headerBg: 'bg-[#88D8B0]' }, // Mint Green
+  { id: 'later', title: 'Later', headerBg: 'bg-black/10' }, // Neutral Gray
 ];
 
-// --- MODALE DE CONFIRMATION ---
+// --- CONFIRMATION MODAL ---
 function ConfirmationModal({ message, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -45,20 +41,20 @@ function ConfirmationModal({ message, onConfirm, onCancel }) {
         <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 border-2 border-red-500 mb-4">
             <AlertTriangle className="h-6 w-6 text-red-600" />
         </div>
-        <h3 className="text-lg font-bold text-black">Confirmation requise</h3>
+        <h3 className="text-lg font-bold text-black">Confirmation required</h3>
         <p className="text-sm text-black/70 mt-2 mb-6">{message}</p>
         <div className="flex gap-4 justify-center">
           <button
             onClick={onCancel}
             className="px-6 py-2 bg-gray-200 text-black font-bold border-2 border-black hover:bg-gray-300 transition-colors shadow-[2px_2px_0px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
           >
-            Annuler
+            Cancel
           </button>
           <button
             onClick={onConfirm}
             className="px-6 py-2 bg-red-500 text-white font-bold border-2 border-black hover:bg-red-600 transition-colors shadow-[2px_2px_0px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
           >
-            Supprimer
+            Delete
           </button>
         </div>
       </div>
@@ -66,12 +62,11 @@ function ConfirmationModal({ message, onConfirm, onCancel }) {
   );
 }
 
-// --- APP PRINCIPALE ---
+// --- MAIN APP ---
 export default function KanbanApp() {
   const { session, isPasswordRecovery, setIsPasswordRecovery, logout } = useAuth();
   const { 
     tasks, 
-    setTasks,
     loading, 
     addTask: addTaskHook, 
     deleteTask: deleteTaskHook, 
@@ -88,11 +83,11 @@ export default function KanbanApp() {
   const [mode, setMode] = useState(() => localStorage.getItem('kanban-mode') || 'pro');
   const [input, setInput] = useState('');
   const [activeTask, setActiveTask] = useState(null);
-  const [selectedTask, setSelectedTask] = useState(null); // Pour la modale
+  const [selectedTask, setSelectedTask] = useState(null); // For the modal
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const settingsRef = useRef(null);
 
-  // Fermer le menu si on clique ailleurs
+  // Close menu if clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (settingsRef.current && !settingsRef.current.contains(event.target)) {
@@ -134,28 +129,28 @@ export default function KanbanApp() {
     return closestCorners(args);
   }, []);
 
-  // Gère la vue de réinitialisation de mot de passe après clic sur le lien dans l'email
+  // Handle password reset view after clicking the link in the email
   if (isPasswordRecovery) {
     return (
       <UpdatePassword
-        title="Créez votre nouveau mot de passe"
-        description="Vous avez été redirigé depuis un lien de réinitialisation. Entrez votre nouveau mot de passe ci-dessous."
+        title="Create your new password"
+        description="You have been redirected from a reset link. Enter your new password below."
         onDone={() => {
           setIsPasswordRecovery(false);
-          // Déconnecte l'utilisateur pour qu'il se reconnecte avec son nouveau mot de passe
+          // Log out the user so they can log in with their new password
           logout();
-          window.location.hash = ''; // Nettoie l'URL
+          window.location.hash = ''; // Clean up URL
         }}
       />
     );
   }
 
-  // Si pas connecté -> Afficher le Login
+  // If not connected -> Show Login
   if (!session) {
     return <Auth />;
   }
 
-  // --- LE RESTE DE L'APPLICATION (MODE CONNECTÉ) ---
+  // --- REST OF THE APPLICATION (CONNECTED MODE) ---
 
   const handleLogout = async () => {
     await logout();
@@ -171,7 +166,7 @@ export default function KanbanApp() {
 
   const handleDeleteTask = (id) => {
     setConfirmation({
-      message: `Voulez-vous vraiment supprimer cette tâche ?`,
+      message: `Do you really want to delete this task?`,
       onConfirm: async () => {
         // Close the details modal if it's open for this task
         if (selectedTask && selectedTask.id === id) {
@@ -194,7 +189,7 @@ export default function KanbanApp() {
     }
   };
 
-  const handleDragOver = (event) => {
+  const handleDragOver = (_event) => {
     // To simplify state management and ensure correct position calculation,
     // all drag logic is now handled in `onDragEnd`. `onDragOver` is kept
     // for potential future use, like custom visual feedback during drag.
@@ -219,13 +214,13 @@ export default function KanbanApp() {
     <div className="p-4 md:p-8 bg-[#586A7A] min-h-screen font-sans flex flex-col">
       {showChangePassword && (
         <UpdatePassword
-          title="Changer votre mot de passe"
-          description="Entrez un nouveau mot de passe sécurisé pour votre compte."
+          title="Change your password"
+          description="Enter a new secure password for your account."
           onDone={() => setShowChangePassword(false)}
         />
       )}
 
-      {/* Modal de Confirmation */}
+      {/* Confirmation Modal */}
       {confirmation && (
         <ConfirmationModal
           message={confirmation.message}
@@ -237,9 +232,10 @@ export default function KanbanApp() {
         />
       )}
       
-      {/* Modal Détails Tâche */}
+      {/* Task Details Modal */}
       {selectedTask && (
         <TaskDetailsModal 
+          key={selectedTask.id}
           task={selectedTask} 
           onClose={() => setSelectedTask(null)} 
           onUpdate={updateTask} 
@@ -253,17 +249,17 @@ export default function KanbanApp() {
             <div className="flex justify-between items-center w-full md:w-auto gap-4">
               <div className="bg-black/10 p-1 rounded-sm inline-flex items-center self-start border-2 border-black">
                 <button onClick={() => setMode('pro')} className={`px-4 py-1.5 rounded-sm text-sm font-bold flex items-center gap-2 transition-all ${isPro ? 'bg-white text-black shadow-[2px_2px_0px_0px_#00000080]' : 'text-black/70'}`}><Briefcase size={16} /> Pro</button>
-                <button onClick={() => setMode('perso')} className={`px-4 py-1.5 rounded-sm text-sm font-bold flex items-center gap-2 transition-all ${!isPro ? 'bg-white text-black shadow-[2px_2px_0px_0px_#00000080]' : 'text-black/70'}`}><Home size={16} /> Perso</button>
+                <button onClick={() => setMode('perso')} className={`px-4 py-1.5 rounded-sm text-sm font-bold flex items-center gap-2 transition-all ${!isPro ? 'bg-white text-black shadow-[2px_2px_0px_0px_#00000080]' : 'text-black/70'}`}><Home size={16} /> Personal</button>
                 
                 {/* Separator */}
                 <div className="w-px h-4 bg-black/20 mx-1"></div>
 
-                {/* MENU PARAMÈTRES */}
+                {/* SETTINGS MENU */}
                 <div className="relative" ref={settingsRef}>
                   <button 
                     onClick={() => setShowSettingsMenu(!showSettingsMenu)} 
                     className={`p-1.5 rounded-sm transition-colors flex items-center justify-center ${showSettingsMenu ? 'bg-white text-black shadow-sm' : 'text-black/50 hover:text-black hover:bg-black/5'}`}
-                    title="Paramètres"
+                    title="Settings"
                   >
                     <Settings size={18} />
                   </button>
@@ -274,13 +270,13 @@ export default function KanbanApp() {
                         onClick={() => { setShowChangePassword(true); setShowSettingsMenu(false); }} 
                         className="p-3 text-left hover:bg-[#89CFF0] flex items-center gap-3 border-b-2 border-black transition-colors font-medium"
                       >
-                        <KeyRound size={18} /> <span>Mot de passe</span>
+                        <KeyRound size={18} /> <span>Password</span>
                       </button>
                       <button 
                         onClick={() => { handleLogout(); setShowSettingsMenu(false); }} 
                         className="p-3 text-left hover:bg-red-100 text-red-600 flex items-center gap-3 transition-colors font-medium"
                       >
-                        <LogOut size={18} /> <span>Se déconnecter</span>
+                        <LogOut size={18} /> <span>Log out</span>
                       </button>
                     </div>
                   )}
@@ -289,17 +285,17 @@ export default function KanbanApp() {
             </div>
             <div>
                <h1 className={`text-2xl font-bold flex gap-2 items-center text-black`}>
-                  <img src="/favicon.svg" alt="Logo" className="w-8 h-8" /> Mon Kanban vibecodé
+                  <img src="/favicon.svg" alt="Logo" className="w-8 h-8" /> My Vibecodé Kanban
                </h1>
                <div className="flex items-center gap-2 text-black/80 text-sm mt-1">
-                 {loading ? <span className="flex items-center gap-1"><Loader2 className="animate-spin" size={14}/> Synchronisation...</span> : <span>{visibleTasks.filter(t => !t.completed).length} tâches à faire</span>}
+                 {loading ? <span className="flex items-center gap-1"><Loader2 className="animate-spin" size={14}/> Synchronizing...</span> : <span>{visibleTasks.filter(t => !t.completed).length} tasks to do</span>}
                </div>
             </div>
           </div>
           
           <div className="flex flex-col md:flex-row gap-2 md:items-center">
             <form onSubmit={handleAddTask} className="flex gap-2 items-center w-full md:w-auto">
-              <input value={input} onChange={e => setInput(e.target.value)} className="bg-white p-3 rounded-none w-full md:w-80 outline-none border-2 border-black focus:shadow-[2px_2px_0px_0px_#000] transition-none" placeholder={`Nouvelle tâche ${isPro ? 'Pro' : 'Perso'}...`} />
+              <input value={input} onChange={e => setInput(e.target.value)} className="bg-white p-3 rounded-none w-full md:w-80 outline-none border-2 border-black focus:shadow-[2px_2px_0px_0px_#000] transition-none" placeholder={`New ${isPro ? 'Pro' : 'Personal'} task...`} />
               <button type="submit" className="bg-[#88D8B0] text-black p-3 rounded-none font-bold border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none" disabled={loading}><Plus /></button>
             </form>
             
@@ -313,7 +309,7 @@ export default function KanbanApp() {
           <DragOverlay dropAnimation={dropAnimation}>{activeTask ? <TaskCard task={activeTask} isOverlay /> : null}</DragOverlay>
         </DndContext>
 
-        {/* Ajoute l'assistant ici, il se positionnera en "fixed" par-dessus tout */}
+        {/* Add the assistant here, it will be positioned "fixed" on top of everything */}
         <RetroAssistant tasks={tasks} />
       </div>
 

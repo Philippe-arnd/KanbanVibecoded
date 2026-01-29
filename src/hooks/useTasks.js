@@ -21,7 +21,7 @@ export function useTasks(session) {
       if (error) throw error;
       setTasks(data || []);
     } catch (error) {
-      console.error('Erreur chargement:', error.message);
+      console.error('Error loading tasks:', error.message);
     } finally {
       setLoading(false);
     }

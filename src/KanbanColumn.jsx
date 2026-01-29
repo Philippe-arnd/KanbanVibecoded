@@ -3,7 +3,7 @@ import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-
 import { Eraser } from 'lucide-react';
 import { TaskCard, CompletedTaskCard } from './TaskCard';
 
-// --- COMPOSANT COLONNE ---
+// --- COLUMN COMPONENT ---
 export const KanbanColumn = React.memo(function KanbanColumn({ col, tasks, deleteTask, toggleTask, updateTitle, clearCompleted, openTaskModal }) {
   const { setNodeRef } = useSortable({ id: col.id, data: { type: 'Column', col } });
   
@@ -18,7 +18,7 @@ export const KanbanColumn = React.memo(function KanbanColumn({ col, tasks, delet
          <span className="bg-white/80 border border-black px-2 py-0.5 rounded-sm text-xs font-bold">{activeTasks.length}</span>
        </div>
        {completedTasks.length > 0 && (
-         <button onClick={() => clearCompleted(col.id)} className="text-xs flex items-center gap-1 bg-white hover:bg-red-100 text-black px-2 py-1 rounded-sm border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none"><Eraser size={14} /> Nettoyer</button>
+         <button onClick={() => clearCompleted(col.id)} className="text-xs flex items-center gap-1 bg-white hover:bg-red-100 text-black px-2 py-1 rounded-sm border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none"><Eraser size={14} /> Clean</button>
        )}
      </div>
       <div className="flex-1 p-4">
@@ -30,7 +30,7 @@ export const KanbanColumn = React.memo(function KanbanColumn({ col, tasks, delet
         <div className="mt-4 px-4 pb-4">
           <div className="flex items-center gap-2 mb-3">
              <div className="h-px bg-black/30 flex-1 border-t border-dashed border-black/40 opacity-50"></div>
-             <span className="text-xs font-medium text-black/50 uppercase">Terminées ({completedTasks.length})</span>
+             <span className="text-xs font-medium text-black/50 uppercase">Completed ({completedTasks.length})</span>
              <div className="h-px bg-black/30 flex-1 border-t border-dashed border-black/40 opacity-50"></div>
           </div>
           <div className="opacity-80">{completedTasks.map(task => <CompletedTaskCard key={task.id} task={task} deleteTask={deleteTask} toggleTask={toggleTask}/>)}</div>

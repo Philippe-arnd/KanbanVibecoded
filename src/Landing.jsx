@@ -6,7 +6,7 @@ export function Landing() {
   return (
     <div className="min-h-screen bg-[#586A7A] font-mono text-black p-4 md:p-8">
       
-      {/* Conteneur Principal style "Fenêtre" */}
+      {/* Main Window Container */}
       <div className="max-w-6xl mx-auto bg-[#E0EBDD] border-2 border-black shadow-[8px_8px_0px_black]">
         
         {/* Navbar / Menu */}
@@ -17,28 +17,28 @@ export function Landing() {
           </div>
           <Link to="/app" className="bg-[#89CFF0] hover:bg-[#7bc0e0] text-black font-bold py-2 px-6 border-2 border-black shadow-[4px_4px_0px_black] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-none flex items-center gap-2">
             <Monitor size={18} />
-            LANCER L'APP
+            LAUNCH APP
           </Link>
         </div>
 
         {/* HERO SECTION */}
         <div className="p-8 md:p-20 flex flex-col items-center text-center border-b-2 border-black bg-[url('https://www.transparenttextures.com/patterns/graphy.png')]">
           <div className="inline-block bg-[#FFC8A2] border-2 border-black px-4 py-1 mb-6 font-bold text-sm shadow-[4px_4px_0px_black] rotate-2">
-            NOUVEAU ! VERSION 2.0
+            NEW! VERSION 2.0
           </div>
           <h1 className="text-4xl md:text-7xl font-black mb-6 uppercase tracking-tighter leading-none">
-            Gérez votre vie<br/>avec un super OS.
+            Manage your life<br/>with a super OS.
           </h1>
           <p className="text-lg md:text-xl mb-10 max-w-2xl font-bold text-gray-700">
-            Fini les logiciels modernes mous et ronds. Découvrez la puissance brute du Kanban Néo-Rétro.
-            Organisez vos tâches Pro et Perso avec un style qui claque.
+            No more soft and round modern software. Discover the raw power of Neo-Retro Kanban.
+            Organize your Pro and Personal tasks with a style that rocks.
           </p>
           <div className="flex flex-col md:flex-row gap-6">
              <Link to="/app" className="bg-[#88D8B0] text-black text-xl font-bold py-4 px-10 border-2 border-black shadow-[6px_6px_0px_black] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none hover:bg-[#75cba0] transition-none">
-               DÉMARRER MAINTENANT {'>'}
+               START NOW {'>'}
              </Link>
              <a href="https://github.com/Philippe-arnd/KanbanVibecoded" target="_blank" rel="noopener noreferrer" className="bg-[#E0EBDD] text-black text-xl font-bold py-4 px-10 border-2 border-black shadow-[6px_6px_0px_black] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none hover:bg-white transition-none">
-               EN SAVOIR PLUS
+               LEARN MORE
              </a>
           </div>
         </div>
@@ -50,9 +50,9 @@ export function Landing() {
             <div className="w-16 h-16 bg-[#FFB7C5] border-2 border-black mb-6 flex items-center justify-center shadow-[4px_4px_0px_black] group-hover:translate-x-1 group-hover:translate-y-1 group-hover:shadow-none transition-all">
               <CheckSquare size={32} />
             </div>
-            <h3 className="text-2xl font-bold mb-3 uppercase">Double Espace</h3>
+            <h3 className="text-2xl font-bold mb-3 uppercase">Dual Space</h3>
             <p className="text-gray-700 leading-relaxed">
-              Basculez entre le mode <strong>PRO</strong> et <strong>PERSO</strong> aussi vite qu'une disquette. Ne mélangez plus vos courses et vos deadlines.
+              Switch between <strong>PRO</strong> and <strong>PERSONAL</strong> mode as fast as a floppy disk. No more mixing groceries and deadlines.
             </p>
           </div>
 
@@ -62,7 +62,7 @@ export function Landing() {
             </div>
             <h3 className="text-2xl font-bold mb-3 uppercase">Drag & Drop</h3>
             <p className="text-gray-700 leading-relaxed">
-              Une technologie de pointe "Glisser-Déposer". Sensation tactile garantie. Cliquez, tenez, déplacez. C'est magique.
+              Cutting-edge "Drag and Drop" technology. Tactile sensation guaranteed. Click, hold, move. It's magic.
             </p>
           </div>
 
@@ -72,7 +72,7 @@ export function Landing() {
             </div>
             <h3 className="text-2xl font-bold mb-3 uppercase">Cloud Sync</h3>
             <p className="text-gray-700 leading-relaxed">
-              Vos données sont sauvegardées dans le cyberespace (Supabase). Accessible depuis n'importe quel terminal connecté.
+              Your data is saved in cyberspace (Supabase). Accessible from any connected terminal.
             </p>
           </div>
 
@@ -83,15 +83,15 @@ export function Landing() {
           <p className="mb-2">{'>'} RUNNING USER_REVIEWS.EXE...</p>
           <p className="mb-4">{'>'} LOADING...</p>
           <div className="border border-green-700 p-4 bg-gray-900 mb-4">
-            "Enfin une application qui ne ressemble pas à toutes les autres. Le style Windows 95 est incroyable et ça m'aide vraiment à m'organiser."
-            <br/><span className="text-white mt-2 block">- Marie, Chef de Projet</span>
+            "Finally an app that doesn't look like all the others. The Windows 95 style is incredible and it really helps me get organized."
+            <br/><span className="text-white mt-2 block">- Marie, Project Manager</span>
           </div>
            <p className="animate-pulse">{'>'} _</p>
         </div>
 
         {/* FOOTER */}
         <div className="bg-[#E0EBDD] p-6 text-center border-t-2 border-black text-sm font-bold uppercase flex flex-col items-center gap-2">
-          <p>© 2026 Vibecodé Systems. Tous droits réservés.</p>
+          <p>© 2026 Vibecodé Systems. All rights reserved.</p>
           <a
             href="https://github.com/Philippe-arnd/KanbanVibecoded"
             target="_blank"
@@ -100,7 +100,7 @@ export function Landing() {
           >
             Kanban Vibecodé <Github size={16} />
           </a>
-          <p className="opacity-50">Optimisé pour Netscape Navigator et Internet Explorer 4.0.</p>
+          <p className="opacity-50">Optimized for Netscape Navigator and Internet Explorer 4.0.</p>
         </div>
 
       </div>

@@ -1,66 +1,66 @@
-# Spécifications des Exigences Logicielles - Kanban Vibecodé v2.0
+# Software Requirements Specifications - Kanban Vibecodé v2.0
 
 ## 1. Introduction
-L'application **Kanban Vibecodé** (v2.0) est un outil de gestion de tâches intuitif, évoluant vers une architecture SaaS connectée, conçu pour aider les utilisateurs à organiser leur charge de travail quotidienne. Elle se distingue par une séparation claire entre les tâches professionnelles et personnelles, une organisation temporelle dynamique et une esthétique "Néo-brutalisme" rétro.
+The **Kanban Vibecodé** application (v2.0) is an intuitive task management tool, evolving towards a connected SaaS architecture, designed to help users organize their daily workload. It is distinguished by a clear separation between professional and personal tasks, dynamic temporal organization, and a retro "Neo-brutalism" aesthetic.
 
-## 2. Exigences Fonctionnelles
+## 2. Functional Requirements
 
-### 2.1 Authentification et Gestion de Compte
-Le système doit sécuriser l'accès aux données utilisateur.
-- **FR-AUTH-01** : L'utilisateur doit pouvoir créer un compte via email et mot de passe.
-- **FR-AUTH-02** : Le système doit valider la force du mot de passe lors de l'inscription (indicateur visuel).
-- **FR-AUTH-03** : L'utilisateur doit pouvoir se connecter à son compte existant.
-- **FR-AUTH-04** : L'utilisateur doit pouvoir demander la réinitialisation de son mot de passe en cas d'oubli (lien par email).
-- **FR-AUTH-05** : L'utilisateur connecté doit pouvoir modifier son mot de passe via l'interface.
-- **FR-AUTH-06** : L'utilisateur doit pouvoir se déconnecter de sa session.
+### 2.1 Authentication and Account Management
+The system must secure access to user data.
+- **FR-AUTH-01**: The user must be able to create an account via email and password.
+- **FR-AUTH-02**: The system must validate password strength during registration (visual indicator).
+- **FR-AUTH-03**: The user must be able to log in to an existing account.
+- **FR-AUTH-04**: The user must be able to request a password reset if forgotten (email link).
+- **FR-AUTH-05**: The logged-in user must be able to change their password via the interface.
+- **FR-AUTH-06**: The user must be able to log out of their session.
 
-### 2.2 Gestion des Tâches (CRUD)
-L'utilisateur doit avoir un contrôle total sur ses tâches.
-- **FR-TASK-01** : L'utilisateur doit pouvoir créer une tâche rapidement via un champ de saisie.
-- **FR-TASK-02** : La tâche doit être créée par défaut dans la colonne "Aujourd'hui" et associée au mode actif (Pro ou Perso).
-- **FR-TASK-03** : L'utilisateur doit pouvoir modifier le titre d'une tâche (édition en place / double-clic).
-- **FR-TASK-04** : L'utilisateur doit pouvoir changer le statut d'une tâche (terminée/non terminée).
-- **FR-TASK-05** : L'utilisateur doit pouvoir supprimer une tâche définitivement.
-- **FR-TASK-06** : L'utilisateur doit pouvoir supprimer en lot toutes les tâches terminées d'une colonne ("Nettoyer").
+### 2.2 Task Management (CRUD)
+The user must have full control over their tasks.
+- **FR-TASK-01**: The user must be able to create a task quickly via an input field.
+- **FR-TASK-02**: The task must be created by default in the "Today" column and associated with the active mode (Pro or Personal).
+- **FR-TASK-03**: The user must be able to edit a task's title (in-place editing / double-click).
+- **FR-TASK-04**: The user must be able to change a task's status (completed/not completed).
+- **FR-TASK-05**: The user must be able to permanently delete a task.
+- **FR-TASK-06**: The user must be able to batch delete all completed tasks in a column ("Clean").
 
-### 2.3 Organisation et Visualisation (Kanban)
-L'interface doit permettre une organisation visuelle et temporelle.
-- **FR-BOARD-01** : Le tableau doit être divisé en colonnes temporelles fixes : *Aujourd'hui*, *Demain*, *Cette semaine*, *Ce mois*, *Plus tard*.
-- **FR-BOARD-02** : L'utilisateur doit pouvoir déplacer les tâches d'une colonne à une autre par glisser-déposer (Drag & Drop).
-- **FR-BOARD-03** : L'utilisateur doit pouvoir réorganiser l'ordre des tâches au sein d'une même colonne.
-- **FR-BOARD-04** : Les tâches terminées doivent être visuellement séparées des tâches actives (en bas de colonne, style distinct).
+### 2.3 Organization and Visualization (Kanban)
+The interface must allow for visual and temporal organization.
+- **FR-BOARD-01**: The board must be divided into fixed temporal columns: *Today*, *Tomorrow*, *This Week*, *This Month*, *Later*.
+- **FR-BOARD-02**: The user must be able to move tasks from one column to another via Drag & Drop.
+- **FR-BOARD-03**: The user must be able to reorganize the order of tasks within the same column.
+- **FR-BOARD-04**: Completed tasks must be visually separated from active tasks (at the bottom of the column, distinct style).
 
-### 2.4 Modes de Vie (Pro / Perso)
-L'application doit permettre de cloisonner les contextes de vie.
-- **FR-MODE-01** : Le système doit gérer deux contextes distincts : "Pro" et "Perso".
-- **FR-MODE-02** : L'utilisateur doit pouvoir basculer entre les modes via un commutateur global.
-- **FR-MODE-03** : L'interface doit filtrer les tâches affichées pour ne montrer que celles correspondant au mode actif.
-- **FR-MODE-04** : L'interface doit adapter son thème couleur selon le mode (ex: Indigo pour Pro, Émeraude pour Perso).
+### 2.4 Life Modes (Pro / Personal)
+The application must allow separating life contexts.
+- **FR-MODE-01**: The system must handle two distinct contexts: "Pro" and "Personal".
+- **FR-MODE-02**: The user must be able to switch between modes via a global switch.
+- **FR-MODE-03**: The interface must filter displayed tasks to show only those corresponding to the active mode.
+- **FR-MODE-04**: The interface must adapt its color theme according to the mode (e.g., Indigo for Pro, Emerald for Personal).
 
-### 2.5 Assistant Intelligent (RetroAssistant)
-- **FR-ASST-01** : Un assistant virtuel nommé **K-Liwy**, au style "Pixel Art", doit être présent sur l'interface (version Desktop).
-- **FR-ASST-02** : L'assistant doit analyser le contexte (heure, nombre de tâches en cours/terminées) pour afficher des messages pertinents (encouragements, alertes de surcharge, etc.).
-- **FR-ASST-03** : L'assistant doit avoir des animations interactives au survol.
+### 2.5 Intelligent Assistant (RetroAssistant)
+- **FR-ASST-01**: A virtual assistant named **K-Liwy**, in "Pixel Art" style, must be present on the interface (Desktop version).
+- **FR-ASST-02**: The assistant must analyze the context (time, number of tasks in progress/completed) to display relevant messages (encouragement, overload alerts, etc.).
+- **FR-ASST-03**: The assistant must have interactive animations on hover.
 
-## 3. Exigences Non-Fonctionnelles
+## 3. Non-Functional Requirements
 
-### 3.1 Interface Utilisateur (UI/UX)
-- **NFR-UI-01** : L'application doit respecter une charte graphique "computer retro 90s" / "Windows 95 vibes" (bordures noires épaisses, ombres portées dures, couleurs pastel saturées).
-- **NFR-UI-02** : L'application doit être "Responsive Design" (adaptée aux mobiles et aux écrans larges).
-- **NFR-UI-03** : Les interactions (drag & drop, boutons) doivent fournir un retour visuel immédiat et tactile ("Composants Mécaniques" avec états active, hover).
+### 3.1 User Interface (UI/UX)
+- **NFR-UI-01**: The application must respect a "retro 90s computer" / "Windows 95 vibes" graphic charter (thick black borders, hard drop shadows, saturated pastel colors).
+- **NFR-UI-02**: The application must be "Responsive Design" (adapted to mobile and wide screens).
+- **NFR-UI-03**: Interactions (drag & drop, buttons) must provide immediate visual and tactile feedback ("Mechanical Components" with active, hover states).
 
-### 3.2 Performance et Données
-- **NFR-PERF-01** : Les données doivent être synchronisées en temps réel avec le backend (Supabase).
-- **NFR-PERF-02** : L'application doit maintenir un état local optimiste pour une sensation de fluidité immédiate lors des actions utilisateur.
+### 3.2 Performance and Data
+- **NFR-PERF-01**: Data must be synchronized in real-time with the backend (Supabase).
+- **NFR-PERF-02**: The application must maintain an optimistic local state for a feeling of immediate fluidity during user actions.
 
-### 3.3 Sécurité
-- **NFR-SEC-01** : Les données des tâches doivent être protégées par des règles de sécurité (RLS - Row Level Security) garantissant que seul le créateur peut lire ou modifier ses tâches.
+### 3.3 Security
+- **NFR-SEC-01**: Task data must be protected by security rules (RLS - Row Level Security) ensuring that only the creator can read or modify their tasks.
 
-## 4. Stack Technique
-- **Frontend** : React.js
-- **Langage** : JavaScript (JSX)
-- **Styles** : Tailwind CSS
-- **Backend (BaaS)** : Supabase (Auth & Database)
-- **Bibliothèques Clés** : 
+## 4. Technical Stack
+- **Frontend**: React.js
+- **Language**: JavaScript (JSX)
+- **Styles**: Tailwind CSS
+- **Backend (BaaS)**: Supabase (Auth & Database)
+- **Key Libraries**: 
   - `@dnd-kit` (Drag & Drop)
-  - `lucide-react` (Icônes)
+  - `lucide-react` (Icons)

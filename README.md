@@ -1,60 +1,60 @@
 # Kanban Vibecodé
 
-<img src="public/favicon.svg" width="80" alt="Logo Kanban" />
+<img src="public/favicon.svg" width="80" alt="Kanban Logo" />
 
-Une application de gestion de tâches intuitive type Kanban, dans un style retro computer (Néo-brutalisme), conçue pour organiser votre charge de travail avec une séparation claire entre vie professionnelle et vie personnelle.
+An intuitive Kanban-style task management application, with a retro computer style (Neo-brutalism), designed to organize your workload with a clear separation between professional and personal life.
 
-🚀 **URL de Production : https://kanban-vibecoded.vercel.app/**
+🚀 **Production URL: https://kanban-vibecoded.vercel.app/**
 
-> Pour les spécifications détaillées, voir [requirements.md](./requirements.md).
+> For detailed specifications, see [requirements.md](./requirements.md).
 
-## Fonctionnalités
+## Features
 
-- **Organisation Temporelle** : Colonnes dynamiques (Aujourd'hui, Demain, Cette semaine, Ce mois, Plus tard).
-- **Double Mode** : Basculez instantanément entre un espace **Pro** (thème Indigo) et **Perso** (thème Émeraude).
-- **Drag & Drop Fluide** : Réorganisez vos tâches par simple glisser-déposer (propulsé par `@dnd-kit`).
-- **Assistant Rétro (K-Liwy 📎)** : Un compagnon en Pixel Art qui analyse votre productivité et vous conseille.
-- **Gestion Complète** :
-  - Ajout rapide de tâches.
-  - Édition par double-clic.
-  - Marquage des tâches terminées.
-  - Nettoyage automatique des tâches finies par colonne.
-- **Cloud & Sécurité** : Authentification complète, gestion de compte et synchronisation temps réel (Supabase).
+- **Time Organization**: Dynamic columns (Today, Tomorrow, This Week, This Month, Later).
+- **Dual Mode**: Instantly switch between **Pro** (Indigo theme) and **Personal** (Emerald theme) spaces.
+- **Fluid Drag & Drop**: Reorganize your tasks with simple drag-and-drop (powered by `@dnd-kit`).
+- **Retro Assistant (K-Liwy 📎)**: A Pixel Art companion that analyzes your productivity and gives advice.
+- **Complete Management**:
+  - Quick task addition.
+  - Edit by double-clicking.
+  - Mark tasks as completed.
+  - Automatic cleanup of finished tasks per column.
+- **Cloud & Security**: Full authentication, account management, and real-time synchronization (Supabase).
 
-## Nouveautés v2.0.0 - Cloud System Upgrade & Retro UI 💾☁️
+## What's New v2.0.0 - Cloud System Upgrade & Retro UI 💾☁️
 
-Cette version 2.0 marque la transformation majeure de l'application vers une architecture SaaS connectée.
+This version 2.0 marks the major transformation of the application towards a connected SaaS architecture.
 
-### 🎨 Refonte UI "Retro Computer"
-- **Style Néo-Rétro** : Bordures noires épaisses, ombres dures et palette pastels (Windows 95 vibes).
-- **Composants Mécaniques** : Effets tactiles au clic.
-- **Assistant Virtuel** : Introduction de **K-Liwy**, assistant productivité humoristique.
+### 🎨 UI Overhaul "Retro Computer"
+- **Neo-Retro Style**: Thick black borders, hard shadows, and pastel palette (Windows 95 vibes).
+- **Mechanical Components**: Tactile effects on click.
+- **Virtual Assistant**: Introduction of **K-Liwy**, a humorous productivity assistant.
 
-### ☁️ Backend & Sécurité (Supabase)
-- **Base de données PostgreSQL** : Synchronisation temps réel.
-- **Sécurité RLS** : Données privées et protégées.
+### ☁️ Backend & Security (Supabase)
+- **PostgreSQL Database**: Real-time synchronization.
+- **RLS Security**: Private and protected data.
 
 ## Installation
 
-1. Clonez le dépôt :
+1. Clone the repository:
    ```bash
    git clone https://github.com/Philippe-arnd/KanbanVibecoded.git
    cd KanbanVibecoded
    ```
 
-2. Installez les dépendances :
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-3. Configurez l'environnement :
-   Créez un fichier `.env` à la racine et ajoutez vos clés Supabase :
+3. Configure the environment:
+   Create a `.env` file at the root and add your Supabase keys:
    ```env
-   VITE_SUPABASE_URL=votre_url_supabase
-   VITE_SUPABASE_ANON_KEY=votre_cle_anon_supabase
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
 
-4. Lancez l'application en mode développement :
+4. Start the application in development mode:
    ```bash
    npm run dev
    ```
@@ -66,19 +66,19 @@ Cette version 2.0 marque la transformation majeure de l'application vers une arc
 - Tailwind CSS
 - Supabase (Auth & Database)
 - @dnd-kit
-- Lucide React (Icônes)
+- Lucide React (Icons)
 
-## Déploiement (CI/CD)
+## Deployment (CI/CD)
 
-Le projet est optimisé pour un déploiement sur **Vercel**.
+The project is optimized for deployment on **Vercel**.
 
-1. **Connexion** : Connectez votre dépôt GitHub à Vercel.
-2. **Configuration** : Vercel détectera automatiquement Vite (grâce au fichier `vercel.json`).
-3. **Variables** : Ajoutez les variables d'environnement (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) dans les paramètres du projet Vercel.
-4. **Workflow** :
-   - Push sur `main` → Mise à jour de la **Production**.
-   - Push sur `dev` (ou autre branche) → Création d'un environnement de **Preview** unique.
+1. **Login**: Connect your GitHub repository to Vercel.
+2. **Configuration**: Vercel will automatically detect Vite (thanks to the `vercel.json` file).
+3. **Variables**: Add the environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) in the Vercel project settings.
+4. **Workflow**:
+   - Push to `main` → Update **Production**.
+   - Push to `dev` (or other branch) → Create a unique **Preview** environment.
 
-## Crédits
+## Credits
 
 © 2026 - [Kanban Vibecodé](https://github.com/Philippe-arnd/KanbanVibecoded)

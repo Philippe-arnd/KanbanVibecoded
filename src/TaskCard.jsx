@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Circle, Trash2, CheckCircle2, ListTodo } from 'lucide-react';
 
 // --- COMPOSANT CARTE ---
-export const TaskCard = React.memo(function TaskCard({ task, toggleTask, updateTitle, isOverlay, openTaskModal }) {
+export const TaskCard = React.memo(function TaskCard({ task, toggleTask, isOverlay, openTaskModal }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ 
     id: task.id,
     data: { type: 'Task', task }
@@ -38,9 +38,9 @@ export const TaskCard = React.memo(function TaskCard({ task, toggleTask, updateT
         <div className="flex-1 min-h-[24px]">
           <div className="flex justify-between items-center gap-2">
             <span 
-              onDoubleClick={() => openTaskModal(task)} 
+              onClick={() => openTaskModal(task)} 
               className="text-sm text-black font-medium break-words block cursor-pointer hover:text-indigo-600 transition-colors" 
-              title="Double-cliquez pour voir les détails"
+              title="Click to view details"
             >
               {task.title}
             </span>
@@ -48,7 +48,7 @@ export const TaskCard = React.memo(function TaskCard({ task, toggleTask, updateT
               <div 
                 onClick={() => openTaskModal(task)}
                 className="flex items-center gap-1 text-[10px] font-bold text-black/50 bg-black/5 px-1.5 py-0.5 border border-black/10 rounded-sm flex-shrink-0 h-fit cursor-pointer hover:bg-black/10 hover:text-black transition-colors"
-                title="Voir les détails"
+                title="View details"
               >
                 <ListTodo size={12} />
                 <span>{completedSubtasksCount}/{subtasksCount}</span>
