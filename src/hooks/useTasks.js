@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { arrayMove } from '@dnd-kit/sortable';
+import { encrypt, decrypt } from '../utils/crypto';
 
 export function useTasks(session) {
   const [tasks, setTasks] = useState([]);
@@ -19,7 +20,17 @@ export function useTasks(session) {
       setLoading(true);
       const { data, error } = await supabase.from('tasks').select('*').order('position', { ascending: true });
       if (error) throw error;
-      setTasks(data || []);
+      
+      const decryptedData = (data || []).map(task => ({
+        ...task,
+        title: decrypt(task.title),
+        subtasks: (task.subtasks || []).map(st => ({
+          ...st,
+          title: decrypt(st.title)
+        }))
+      }));
+
+      setTasks(decryptedData);
     } catch (error) {
       console.error('Error loading tasks:', error.message);
     } finally {
@@ -48,11 +59,13 @@ export function useTasks(session) {
 
     const { data, error } = await supabase
       .from('tasks')
-      .insert([{ title, columnId: 'today', type: mode, user_id: user.id, subtasks: [] }])
+      .insert([{ title: encrypt(title), columnId: 'today', type: mode, user_id: user.id, subtasks: [] }])
       .select();
     
     if (data) {
-        setTasks(prev => prev.map(t => t.id === tempId ? data[0] : t));
+        // We use the local title because data[0].title is encrypted (or we'd need to decrypt it)
+        const savedTask = data[0];
+        setTasks(prev => prev.map(t => t.id === tempId ? { ...savedTask, title: title, subtasks: [] } : t));
     } else if (error) {
         console.error("Error adding task:", error);
         // Revert on error could be implemented here
@@ -73,7 +86,12 @@ export function useTasks(session) {
     
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, subtasks: updatedSubtasks } : t));
     
-    const { error } = await supabase.from('tasks').update({ subtasks: updatedSubtasks }).eq('id', taskId);
+    const encryptedSubtasks = updatedSubtasks.map(st => ({
+      ...st,
+      title: encrypt(st.title)
+    }));
+
+    const { error } = await supabase.from('tasks').update({ subtasks: encryptedSubtasks }).eq('id', taskId);
     if (error) console.error("Error deleting subtask:", error);
   };
 
@@ -89,15 +107,24 @@ export function useTasks(session) {
 
   const updateTaskTitle = async (id, newTitle) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, title: newTitle } : t));
-    const { error } = await supabase.from('tasks').update({ title: newTitle }).eq('id', id);
+    const { error } = await supabase.from('tasks').update({ title: encrypt(newTitle) }).eq('id', id);
     if (error) console.error("Error updating title:", error);
   };
 
   const updateTask = async (updatedTask) => {
     setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
+    
+    const taskToSave = {
+      title: encrypt(updatedTask.title),
+      subtasks: (updatedTask.subtasks || []).map(st => ({
+        ...st,
+        title: encrypt(st.title)
+      }))
+    };
+
     const { error } = await supabase.from('tasks').update({ 
-        title: updatedTask.title,
-        subtasks: updatedTask.subtasks 
+        title: taskToSave.title,
+        subtasks: taskToSave.subtasks 
     }).eq('id', updatedTask.id);
     if (error) console.error("Error updating task:", error);
   };
