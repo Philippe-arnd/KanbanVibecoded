@@ -31,33 +31,41 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
     async sendResetPassword({ user, url, token }) {
-      const templatePath = path.join(__dirname, "db", "reset_password.html");
-      let html = fs.readFileSync(templatePath, "utf-8");
-      html = html.replace(/{{ \.ConfirmationURL }}/g, url);
+      try {
+        const templatePath = path.join(__dirname, "db", "reset_password.html");
+        let html = fs.readFileSync(templatePath, "utf-8");
+        html = html.replace(/{{ \.ConfirmationURL }}/g, url);
 
-      await transporter.sendMail({
-        from: "Contact <noreply@contact.philapps.com>",
-        to: user.email,
-        subject: "Password Reset",
-        text: `Reset your password by clicking this link: ${url}`,
-        html: html,
-      });
+        await transporter.sendMail({
+          from: "Contact <noreply@contact.philapps.com>",
+          to: user.email,
+          subject: "Password Reset",
+          text: `Reset your password by clicking this link: ${url}`,
+          html: html,
+        });
+      } catch (e) {
+        console.error("Failed to send reset email", e);
+      }
     },
   },
   emailVerification: {
     sendOnSignUp: true,
     async sendVerificationEmail({ user, url, token }) {
-      const templatePath = path.join(__dirname, "db", "confirm_signup.html");
-      let html = fs.readFileSync(templatePath, "utf-8");
-      html = html.replace(/{{ \.ConfirmationURL }}/g, url);
+      try {
+        const templatePath = path.join(__dirname, "db", "confirm_signup.html");
+        let html = fs.readFileSync(templatePath, "utf-8");
+        html = html.replace(/{{ \.ConfirmationURL }}/g, url);
 
-      await transporter.sendMail({
-        from: "Contact <noreply@contact.philapps.com>",
-        to: user.email,
-        subject: "Confirm your registration",
-        text: `Please confirm your email by clicking this link: ${url}`,
-        html: html,
-      });
+        await transporter.sendMail({
+          from: "Contact <noreply@contact.philapps.com>",
+          to: user.email,
+          subject: "Confirm your registration",
+          text: `Please confirm your email by clicking this link: ${url}`,
+          html: html,
+        });
+      } catch (e) {
+        console.error("Failed to send verification email", e);
+      }
     },
   },
 });
