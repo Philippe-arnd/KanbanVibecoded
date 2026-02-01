@@ -16,11 +16,19 @@ const port = process.env.SERVER_PORT || 3000;
 
 app.use(cors({
     origin: function (origin, callback) {
-        const allowedOrigins = ["http://localhost:5173", "http://127.0.0.1:5173", process.env.BETTER_AUTH_URL];
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        const allowedOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
+        if (process.env.BETTER_AUTH_URL) {
+            allowedOrigins.push(process.env.BETTER_AUTH_URL);
+        }
+        if (process.env.BETTER_AUTH_BASE_URL) {
+            allowedOrigins.push(process.env.BETTER_AUTH_BASE_URL);
+        }
+        
+        if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            callback(null, true); // Allow in production if needed, or refine based on domain
+            // In production, you might want to be more restrictive or allow all for debugging
+            callback(null, true); 
         }
     },
     credentials: true,
@@ -126,7 +134,7 @@ app.use(express.static(path.join(__dirname, "../dist")));
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
-app.get("*", (req, res) => {
+app.get('(.*)', (req, res) => {
     // If it's an API request that didn't match, don't serve index.html
     if (req.path.startsWith("/api")) {
         return res.status(404).json({ error: "Not Found" });
