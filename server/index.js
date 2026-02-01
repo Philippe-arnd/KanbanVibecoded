@@ -30,6 +30,11 @@ app.use(cors({
 
 app.use(express.json());
 
+// Healthcheck for Coolify
+app.get("/api/health", (req, res) => {
+    res.json({ status: "ok" });
+});
+
 // Auth routes
 app.all(/\/api\/auth\/.*/, toNodeHandler(auth));
 
