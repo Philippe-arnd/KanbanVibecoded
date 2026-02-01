@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
 import { Landing } from './Landing';      // Ta nouvelle page d'accueil
 import KanbanApp from './KanbanApp';  // Ton ancienne App (Auth + Kanban)
 

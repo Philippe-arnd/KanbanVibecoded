@@ -50,7 +50,7 @@ The application must allow separating life contexts.
 - **NFR-UI-03**: Interactions (drag & drop, buttons) must provide immediate visual and tactile feedback ("Mechanical Components" with active, hover states).
 
 ### 3.2 Performance and Data
-- **NFR-PERF-01**: Data must be synchronized in real-time with the backend (Supabase).
+- **NFR-PERF-01**: Data must be persisted reliably in the backend (PostgreSQL).
 - **NFR-PERF-02**: The application must maintain an optimistic local state for a feeling of immediate fluidity during user actions.
 
 ### 3.3 Security
@@ -60,7 +60,7 @@ The application must allow separating life contexts.
 - **Frontend**: React.js
 - **Language**: JavaScript (JSX)
 - **Styles**: Tailwind CSS
-- **Backend (BaaS)**: Supabase (Auth & Database)
+- **Backend**: Node.js, Express, PostgreSQL, Better Auth
 - **Key Libraries**: 
   - `@dnd-kit` (Drag & Drop)
   - `lucide-react` (Icons)

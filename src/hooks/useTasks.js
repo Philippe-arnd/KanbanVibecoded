@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
 import { arrayMove } from '@dnd-kit/sortable';
 import { encrypt, decrypt } from '../utils/crypto';
+
+const API_URL = '/api';
 
 export function useTasks(session) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (session) {
+    if (session?.user) {
       fetchTasks();
     } else {
       setTasks([]);
@@ -18,8 +19,11 @@ export function useTasks(session) {
   async function fetchTasks() {
     try {
       setLoading(true);
-      const { data, error } = await supabase.from('tasks').select('*').order('position', { ascending: true });
-      if (error) throw error;
+      const res = await fetch(`${API_URL}/tasks`, {
+        credentials: 'include'
+      });
+      if (!res.ok) throw new Error('Failed to fetch tasks');
+      const data = await res.json();
       
       const decryptedData = (data || []).map(task => ({
         ...task,
@@ -49,7 +53,7 @@ export function useTasks(session) {
       columnId: 'today', 
       completed: false, 
       type: mode,
-      user_id: user.id,
+      userId: user.id,
       subtasks: [],
       position: Date.now()
     };
@@ -57,25 +61,47 @@ export function useTasks(session) {
     // Optimistic update
     setTasks(prev => [...prev, newTask]);
 
-    const { data, error } = await supabase
-      .from('tasks')
-      .insert([{ title: encrypt(title), columnId: 'today', type: mode, user_id: user.id, subtasks: [] }])
-      .select();
-    
-    if (data) {
-        // We use the local title because data[0].title is encrypted (or we'd need to decrypt it)
-        const savedTask = data[0];
+    try {
+      const payload = {
+        title: encrypt(title),
+        columnId: 'today',
+        type: mode,
+        subtasks: [],
+        position: newTask.position
+      };
+
+      const res = await fetch(`${API_URL}/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error('Failed to save task');
+      
+      // The server returns an array of inserted rows (because of .returning())
+      const data = await res.json();
+      const savedTask = data[0];
+
+      if (savedTask) {
         setTasks(prev => prev.map(t => t.id === tempId ? { ...savedTask, title: title, subtasks: [] } : t));
-    } else if (error) {
-        console.error("Error adding task:", error);
-        // Revert on error could be implemented here
+      }
+    } catch (error) {
+      console.error("Error adding task:", error);
+      setTasks(prev => prev.filter(t => t.id !== tempId)); // Revert
     }
   };
 
   const deleteTask = async (id) => {
     setTasks(prev => prev.filter(t => t.id !== id));
-    const { error } = await supabase.from('tasks').delete().eq('id', id);
-    if (error) console.error("Error deleting task:", error);
+    try {
+      await fetch(`${API_URL}/tasks/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
   };
 
   const deleteSubtask = async (taskId, subtaskId) => {
@@ -91,8 +117,16 @@ export function useTasks(session) {
       title: encrypt(st.title)
     }));
 
-    const { error } = await supabase.from('tasks').update({ subtasks: encryptedSubtasks }).eq('id', taskId);
-    if (error) console.error("Error deleting subtask:", error);
+    try {
+      await fetch(`${API_URL}/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ subtasks: encryptedSubtasks })
+      });
+    } catch (error) {
+       console.error("Error deleting subtask:", error);
+    }
   };
 
   const toggleTask = async (id) => {
@@ -101,14 +135,32 @@ export function useTasks(session) {
     const newStatus = !task.completed;
     
     setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: newStatus } : t));
-    const { error } = await supabase.from('tasks').update({ completed: newStatus }).eq('id', id);
-    if (error) console.error("Error toggling task:", error);
+    
+    try {
+      await fetch(`${API_URL}/tasks/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ completed: newStatus })
+      });
+    } catch (error) {
+      console.error("Error toggling task:", error);
+    }
   };
 
   const updateTaskTitle = async (id, newTitle) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, title: newTitle } : t));
-    const { error } = await supabase.from('tasks').update({ title: encrypt(newTitle) }).eq('id', id);
-    if (error) console.error("Error updating title:", error);
+    
+    try {
+      await fetch(`${API_URL}/tasks/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ title: encrypt(newTitle) })
+      });
+    } catch (error) {
+      console.error("Error updating title:", error);
+    }
   };
 
   const updateTask = async (updatedTask) => {
@@ -122,11 +174,19 @@ export function useTasks(session) {
       }))
     };
 
-    const { error } = await supabase.from('tasks').update({ 
-        title: taskToSave.title,
-        subtasks: taskToSave.subtasks 
-    }).eq('id', updatedTask.id);
-    if (error) console.error("Error updating task:", error);
+    try {
+      await fetch(`${API_URL}/tasks/${updatedTask.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          title: taskToSave.title,
+          subtasks: taskToSave.subtasks 
+        })
+      });
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
   };
 
   const clearCompletedTasks = async (columnId, mode) => {
@@ -134,8 +194,17 @@ export function useTasks(session) {
     const idsToDelete = tasksToDelete.map(t => t.id);
     
     setTasks(prev => prev.filter(t => !idsToDelete.includes(t.id)));
-    const { error } = await supabase.from('tasks').delete().in('id', idsToDelete);
-    if (error) console.error("Error clearing completed tasks:", error);
+    
+    try {
+      await Promise.all(idsToDelete.map(id => 
+        fetch(`${API_URL}/tasks/${id}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        })
+      ));
+    } catch (error) {
+      console.error("Error clearing completed tasks:", error);
+    }
   };
 
   const moveTask = (active, over) => {
@@ -188,8 +257,14 @@ export function useTasks(session) {
   };
 
   const persistTaskMove = async (taskId, newColumnId, newPosition, originalTasks) => {
-    const { error } = await supabase.from('tasks').update({ columnId: newColumnId, position: newPosition }).eq('id', taskId);
-    if (error) {
+    try {
+      await fetch(`${API_URL}/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ columnId: newColumnId, position: newPosition })
+      });
+    } catch (error) {
       console.error("Error moving task:", error);
       setTasks(originalTasks); // Revert on error
     }

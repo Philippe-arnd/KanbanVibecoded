@@ -19,7 +19,7 @@ An intuitive Kanban-style task management application, with a retro computer sty
   - Edit by double-clicking.
   - Mark tasks as completed.
   - Automatic cleanup of finished tasks per column.
-- **Cloud & Security**: Full authentication, account management, and real-time synchronization (Supabase).
+- **Cloud & Security**: Full authentication and account management (Better Auth + PostgreSQL).
 
 ## What's New v2.0.0 - Cloud System Upgrade & Retro UI 💾☁️
 
@@ -30,7 +30,7 @@ This version 2.0 marks the major transformation of the application towards a con
 - **Mechanical Components**: Tactile effects on click.
 - **Virtual Assistant**: Introduction of **K-Liwy**, a humorous productivity assistant.
 
-### ☁️ Backend & Security (Supabase)
+### ☁️ Backend & Security (PostgreSQL)
 - **PostgreSQL Database**: Real-time synchronization.
 - **RLS Security**: Private and protected data.
 
@@ -48,11 +48,14 @@ This version 2.0 marks the major transformation of the application towards a con
    ```
 
 3. Configure the environment:
-   Create a `.env` file at the root and add your Supabase keys:
-   ```env
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
+   Create a `.env` file at the root and configure your database and auth:
+
+```bash
+DATABASE_URL=postgresql://user:password@host:port/dbname
+BETTER_AUTH_SECRET=your_secret
+SMTP_HOST=your_smtp_host
+# ... see .env.example
+```
 
 4. Start the application in development mode:
    ```bash
@@ -64,7 +67,9 @@ This version 2.0 marks the major transformation of the application towards a con
 - React
 - React Router Dom
 - Tailwind CSS
-- Supabase (Auth & Database)
+- Backend: Node.js / Express
+- Database: PostgreSQL (via Drizzle ORM)
+- Auth: Better Auth
 - @dnd-kit
 - Lucide React (Icons)
 
@@ -74,7 +79,7 @@ The project is optimized for deployment on **Vercel**.
 
 1. **Login**: Connect your GitHub repository to Vercel.
 2. **Configuration**: Vercel will automatically detect Vite (thanks to the `vercel.json` file).
-3. **Variables**: Add the environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) in the Vercel project settings.
+3. **Variables**: Add the environment variables (`DATABASE_URL`, `BETTER_AUTH_SECRET`, etc.) in the Vercel project settings.
 4. **Workflow**:
    - Push to `main` → Update **Production**.
    - Push to `dev` (or other branch) → Create a unique **Preview** environment.

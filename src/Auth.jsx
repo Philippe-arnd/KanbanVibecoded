@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from './supabaseClient';
+import { authClient } from './lib/auth-client';
 import { Lock, Mail, Loader2, Eye, EyeOff, Check, MailCheck, ArrowLeft } from 'lucide-react';
 
 export default function Auth() {
@@ -29,15 +29,15 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
 
-    let error = null;
+    let authError = null;
 
     if (view === 'login') {
       // 1. Log in
-      const { error: signInError } = await supabase.auth.signInWithPassword({ 
+      const { error } = await authClient.signIn.email({ 
         email, 
         password 
       });
-      error = signInError;
+      authError = error;
     } else if (view === 'signup') {
       // Password confirmation check
       if (password !== confirmPassword) {
@@ -47,30 +47,30 @@ export default function Auth() {
       }
 
       // 2. Sign up
-      const { data, error: signUpError } = await supabase.auth.signUp({ 
+      const { data, error } = await authClient.signUp.email({ 
         email, 
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/app` // Redirects to app to handle session
-        }
+        name: email.split('@')[0], // Better-Auth often requires a name
+        callbackURL: `${window.location.origin}/app` // Redirects to app to handle session
       });
-      error = signUpError;
+      authError = error;
       
-      if (!error && data) {
+      if (!authError && data) {
         setShowSuccess(true);
       }
     } else if (view === 'forgot_password') {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await authClient.forgetPassword({
+        email,
         redirectTo: `${window.location.origin}/app`,
       });
-      error = resetError;
-      if (!error) {
+      authError = error;
+      if (!authError) {
         setShowResetSuccess(true);
       }
     }
 
-    if (error) {
-      alert(error.message);
+    if (authError) {
+      alert(authError.message || authError.statusText || "An error occurred");
     }
     setLoading(false);
   };

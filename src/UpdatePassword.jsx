@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import { supabase } from './supabaseClient';
+import { authClient } from './lib/auth-client';
 import { KeyRound, Lock, Eye, EyeOff, Check, Loader2 } from 'lucide-react';
 
 // --- PASSWORD UPDATE COMPONENT ---
 export default function UpdatePassword({ onDone, title, description }) {
+  const [currentPassword, setCurrentPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const isChangeMode = title === "Change your password";
 
   const getPasswordStrength = (pass) => {
     let score = 0;
@@ -36,11 +39,24 @@ export default function UpdatePassword({ onDone, title, description }) {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
+    let res;
+    
+    if (isChangeMode) {
+        res = await authClient.changePassword({
+            newPassword: password,
+            currentPassword: currentPassword
+        });
+    } else {
+        // Reset mode (token is expected in URL)
+        res = await authClient.resetPassword({
+            newPassword: password,
+        });
+    }
+
     setLoading(false);
 
-    if (error) {
-      setError(error.message);
+    if (res.error) {
+      setError(res.error.message || "An error occurred");
     } else {
       setSuccess("Password updated successfully!");
       setTimeout(() => {
@@ -67,6 +83,17 @@ export default function UpdatePassword({ onDone, title, description }) {
 
         <form onSubmit={handleUpdatePassword} className="space-y-4 p-8 pt-0">
           <p className="text-black/80 -mt-4 mb-4">{description}</p>
+          
+          {isChangeMode && (
+             <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
+                  <input type="password" required value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-white border-2 border-black rounded-none focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] outline-none transition-none" placeholder="Current password" />
+                </div>
+             </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">New password</label>
             <div className="relative">

@@ -71,8 +71,8 @@ export function Landing() {
               <Save size={32} />
             </div>
             <h3 className="text-2xl font-bold mb-3 uppercase">Cloud Sync</h3>
-            <p className="text-gray-700 leading-relaxed">
-              Your data is saved in cyberspace (Supabase). Accessible from any connected terminal.
+            <p className="mt-4 text-gray-400">
+              Your data is saved in the cloud. Accessible from any connected terminal.
             </p>
           </div>
 
