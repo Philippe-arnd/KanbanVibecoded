@@ -1,12 +1,17 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      args:
+        - VITE_ENCRYPTION_KEY=${VITE_ENCRYPTION_KEY}
     restart: always
     # Coolify utilisera ce port pour le routing (FQDN)
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - SERVER_PORT=3000
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-kanban_prod}
+      - VITE_ENCRYPTION_KEY=${VITE_ENCRYPTION_KEY}
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
       - SMTP_HOST=${SMTP_HOST}

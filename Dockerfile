@@ -4,6 +4,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+ARG VITE_ENCRYPTION_KEY
+ENV VITE_ENCRYPTION_KEY=$VITE_ENCRYPTION_KEY
 RUN npm run build
 
 # Production stage
