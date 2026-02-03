@@ -130,7 +130,7 @@ app.delete("/api/tasks/:id", getSession, async (req, res) => {
 });
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, "../dist")));
+app.use(express.static(path.join(__dirname, "../client/dist")));
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
@@ -139,7 +139,7 @@ app.get(/.*/, (req, res) => {
     if (req.path.startsWith("/api")) {
         return res.status(404).json({ error: "Not Found" });
     }
-    res.sendFile(path.join(__dirname, "../dist/index.html"));
+    res.sendFile(path.join(__dirname, "../client/dist/index.html"));
 });
 
 app.listen(port, '0.0.0.0', () => {

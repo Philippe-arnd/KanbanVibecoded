@@ -37,3 +37,4 @@ coverage/
 .gemini/
 .geminiignore
 kanban-app.code-workspace
+scripts/
