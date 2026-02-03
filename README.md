@@ -4,8 +4,6 @@
 
 An intuitive Kanban-style task management application, with a retro computer style (Neo-brutalism), designed to organize your workload with a clear separation between professional and personal life.
 
-🚀 **Production URL: https://kanban-vibecoded.vercel.app/**
-
 > For detailed specifications, see [requirements.md](./requirements.md).
 
 ## Features
