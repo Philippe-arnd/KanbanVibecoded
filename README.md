@@ -1,6 +1,6 @@
 # Kanban Vibecodé
 
-<img src="public/favicon.svg" width="80" alt="Kanban Logo" />
+<img src="client/public/favicon.svg" width="80" alt="Kanban Logo" />
 
 An intuitive Kanban-style task management application, with a retro computer style (Neo-brutalism), designed to organize your workload with a clear separation between professional and personal life.
 
@@ -18,19 +18,21 @@ An intuitive Kanban-style task management application, with a retro computer sty
   - Mark tasks as completed.
   - Automatic cleanup of finished tasks per column.
 - **Cloud & Security**: Full authentication and account management (Better Auth + PostgreSQL).
+- **PWA Ready**: Installable on mobile and desktop with optimized icons and offline manifest.
 
-## What's New v2.0.0 - Cloud System Upgrade & Retro UI 💾☁️
+## What's New v2.1.0 - Architecture & Docker 💾☁️
 
-This version 2.0 marks the major transformation of the application towards a connected SaaS architecture.
+This version 2.1 marks the transition to a clean monorepo-style architecture and full containerization.
 
-### 🎨 UI Overhaul "Retro Computer"
-- **Neo-Retro Style**: Thick black borders, hard shadows, and pastel palette (Windows 95 vibes).
-- **Mechanical Components**: Tactile effects on click.
-- **Virtual Assistant**: Introduction of **K-Liwy**, a humorous productivity assistant.
+### 🏗️ Monorepo Structure
+- **Client**: Vite-powered React application in `/client`.
+- **Server**: Node.js/Express backend in `/server`.
+- **Scripts**: Utility scripts for database seeding and management in `/scripts`.
 
-### ☁️ Backend & Security (PostgreSQL)
-- **PostgreSQL Database**: Real-time synchronization.
-- **RLS Security**: Private and protected data.
+### 🐳 Docker & DevOps
+- **Dockerized**: Full `Dockerfile` and `docker-compose.yml` for easy deployment.
+- **Coolify Compatible**: Seamless deployment on self-hosted VPS.
+- **CI/CD**: GitHub Actions for automated testing and deployment.
 
 ## Installation
 
@@ -46,14 +48,7 @@ This version 2.0 marks the major transformation of the application towards a con
    ```
 
 3. Configure the environment:
-   Create a `.env` file at the root and configure your database and auth:
-
-```bash
-DATABASE_URL=postgresql://user:password@host:port/dbname
-BETTER_AUTH_SECRET=your_secret
-SMTP_HOST=your_smtp_host
-# ... see .env.example
-```
+   Create a `.env` file at the root and configure your database and auth (see `.env.example`).
 
 4. Start the application in development mode:
    ```bash
@@ -62,25 +57,23 @@ SMTP_HOST=your_smtp_host
 
 ## Technologies
 
-- React
-- React Router Dom
-- Tailwind CSS
-- Backend: Node.js / Express
-- Database: PostgreSQL (via Drizzle ORM)
-- Auth: Better Auth
-- @dnd-kit
-- Lucide React (Icons)
+- **Frontend**: React 19, Vite, Tailwind CSS 4, React Router 7.
+- **Backend**: Node.js, Express.
+- **Database**: PostgreSQL (via Drizzle ORM).
+- **Auth**: Better Auth.
+- **Utilities**: @dnd-kit, Lucide React, Docker.
 
 ## Deployment (CI/CD)
 
-The project is optimized for deployment on **Vercel**.
+### Vercel (Frontend/Fullstack)
+1. Connect your GitHub repository to Vercel.
+2. The `vercel.json` file handles the configuration.
+3. Add environment variables in settings.
 
-1. **Login**: Connect your GitHub repository to Vercel.
-2. **Configuration**: Vercel will automatically detect Vite (thanks to the `vercel.json` file).
-3. **Variables**: Add the environment variables (`DATABASE_URL`, `BETTER_AUTH_SECRET`, etc.) in the Vercel project settings.
-4. **Workflow**:
-   - Push to `main` → Update **Production**.
-   - Push to `dev` (or other branch) → Create a unique **Preview** environment.
+### Docker / Coolify (Self-hosted)
+1. Use the provided `docker-compose.yml` for self-hosted deployment.
+2. The application is served on port `3000` by default.
+3. Automatic database migrations and seeding are handled via the Docker entrypoint.
 
 ## Credits
 
