@@ -17,5 +17,6 @@ COPY package*.json ./
 RUN npm install --omit=dev
 COPY --from=build /app/client/dist ./client/dist
 COPY server ./server
+COPY scripts ./scripts
 EXPOSE 3000
-CMD ["sh", "-c", "npm run db:push && node server/index.js"]
+CMD ["sh", "-c", "npm run db:push && node scripts/seed-user.js && node server/index.js"]

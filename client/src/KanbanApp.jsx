@@ -22,6 +22,7 @@ import {
 import { 
   sortableKeyboardCoordinates
 } from '@dnd-kit/sortable';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Briefcase, Home, Loader2, LogOut, KeyRound, Github, Settings, AlertTriangle } from 'lucide-react';
 
 // --- CONFIGURATION ---
@@ -65,6 +66,7 @@ function ConfirmationModal({ message, onConfirm, onCancel }) {
 // --- MAIN APP ---
 export default function KanbanApp() {
   const { session, isPasswordRecovery, setIsPasswordRecovery, logout } = useAuth();
+  const navigate = useNavigate();
   const { 
     tasks, 
     loading, 
@@ -138,7 +140,7 @@ export default function KanbanApp() {
         onDone={() => {
           setIsPasswordRecovery(false);
           // Log out the user so they can log in with their new password
-          logout();
+          logout().then(() => navigate('/'));
           window.location.hash = ''; // Clean up URL
         }}
       />
@@ -154,6 +156,7 @@ export default function KanbanApp() {
 
   const handleLogout = async () => {
     await logout();
+    navigate('/');
   };
 
   const visibleTasks = tasks.filter(t => (t.type || 'pro') === mode);
