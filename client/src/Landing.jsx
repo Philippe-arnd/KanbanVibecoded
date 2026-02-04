@@ -1,8 +1,26 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { CheckSquare, Monitor, Save, MousePointer, Github } from 'lucide-react';
+import { useAuth } from './hooks/useAuth';
 
 export function Landing() {
+  const { session, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && session) {
+      navigate('/app');
+    }
+  }, [session, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#586A7A] flex items-center justify-center">
+        <div className="text-white font-mono animate-pulse">LOADING SYSTEM...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#586A7A] font-mono text-black p-4 md:p-8">
       

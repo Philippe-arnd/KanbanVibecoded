@@ -3,8 +3,8 @@
   "short_name": "Kanban",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#89CFF0",
+  "background_color": "#586a7a",
+  "theme_color": "#586a7a",
   "description": "A Kanban board application",
   "icons": [
     {
