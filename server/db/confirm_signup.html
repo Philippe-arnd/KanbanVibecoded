@@ -1,72 +1,164 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Confirm your registration</title>
-</head>
-<body style="font-family: 'Courier New', Courier, monospace; background-color: #586A7A; margin: 0; padding: 0; color: #000000;">
-
-  <div style="padding: 40px 20px;">
-    
-    <div style="max-width: 600px; margin: 0 auto; background-color: #E0EBDD; border: 2px solid #000000; box-shadow: 8px 8px 0px #000000;">
-      
-      <div style="background-color: #89CFF0; border-bottom: 2px solid #000000; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: bold; font-size: 18px; text-transform: uppercase; letter-spacing: 1px;">🚀 WELCOME.EXE</span>
-        <div style="width: 16px; height: 16px; background-color: #ffffff; border: 2px solid #000000; display: inline-block;"></div>
-      </div>
-
-      <div style="padding: 30px;">
-        
-        <p style="font-size: 16px; line-height: 1.5; margin-bottom: 24px;"><strong>>_ Hello,</strong></p>
-        
-        <p style="font-size: 14px; line-height: 1.6; margin-bottom: 32px;">
-          Thank you for joining the adventure. The system is ready.<br>
-          You are just one click away from organizing your life with ease. Validate your account to initialize your dashboard.
-        </p>
-
-        <div style="text-align: center; margin-bottom: 40px;">
-          <a href="{{ .ConfirmationURL }}" style="display: inline-block; background-color: #88D8B0; color: #000000; font-weight: bold; padding: 15px 30px; border: 2px solid #000000; text-decoration: none; font-size: 16px; box-shadow: 4px 4px 0px #000000; text-transform: uppercase;">
-            [ Confirm my email ]
-          </a>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Confirm your registration</title>
+  </head>
+  <body
+    style="
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #586a7a;
+      margin: 0;
+      padding: 0;
+      color: #000000;
+    "
+  >
+    <div style="padding: 40px 20px">
+      <div
+        style="
+          max-width: 600px;
+          margin: 0 auto;
+          background-color: #e0ebdd;
+          border: 2px solid #000000;
+          box-shadow: 8px 8px 0px #000000;
+        "
+      >
+        <div
+          style="
+            background-color: #89cff0;
+            border-bottom: 2px solid #000000;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <span
+            style="
+              font-weight: bold;
+              font-size: 18px;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+            "
+            >🚀 WELCOME.EXE</span
+          >
+          <div
+            style="
+              width: 16px;
+              height: 16px;
+              background-color: #ffffff;
+              border: 2px solid #000000;
+              display: inline-block;
+            "
+          ></div>
         </div>
 
-        <div style="background-color: #ffffff; padding: 20px; border: 2px solid #000000; margin-bottom: 20px;">
-          <p style="font-weight: bold; margin-top: 0; margin-bottom: 16px; border-bottom: 2px dashed #000000; padding-bottom: 10px;">WHAT AWAITS YOU:</p>
-          
-          <table width="100%" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-              <td width="40" valign="top" style="font-size: 24px; padding-bottom: 15px;">💼</td>
-              <td style="padding-bottom: 15px; font-size: 14px;">
-                <strong>Dual Workspace:</strong><br>Instantly switch between your <span style="background-color: #FFC8A2; padding: 0 4px;">Pro</span> and <span style="background-color: #88D8B0; padding: 0 4px;">Personal</span> tasks.
-              </td>
-            </tr>
-            <tr>
-              <td width="40" valign="top" style="font-size: 24px; padding-bottom: 15px;">🖱️</td>
-              <td style="padding-bottom: 15px; font-size: 14px;">
-                <strong>Smooth Drag & Drop:</strong><br>Drag, drop and organize your cards intuitively.
-              </td>
-            </tr>
-            <tr>
-              <td width="40" valign="top" style="font-size: 24px;">☁️</td>
-              <td style="font-size: 14px;">
-                <strong>Synchronized:</strong><br>Access your tasks anywhere, anytime.
-              </td>
-            </tr>
-          </table>
+        <div style="padding: 30px">
+          <p style="font-size: 16px; line-height: 1.5; margin-bottom: 24px">
+            <strong>>_ Hello,</strong>
+          </p>
+
+          <p style="font-size: 14px; line-height: 1.6; margin-bottom: 32px">
+            Thank you for joining the adventure. The system is ready.<br />
+            You are just one click away from organizing your life with ease. Validate your account
+            to initialize your dashboard.
+          </p>
+
+          <div style="text-align: center; margin-bottom: 40px">
+            <a
+              href="{{ .ConfirmationURL }}"
+              style="
+                display: inline-block;
+                background-color: #88d8b0;
+                color: #000000;
+                font-weight: bold;
+                padding: 15px 30px;
+                border: 2px solid #000000;
+                text-decoration: none;
+                font-size: 16px;
+                box-shadow: 4px 4px 0px #000000;
+                text-transform: uppercase;
+              "
+            >
+              [ Confirm my email ]
+            </a>
+          </div>
+
+          <div
+            style="
+              background-color: #ffffff;
+              padding: 20px;
+              border: 2px solid #000000;
+              margin-bottom: 20px;
+            "
+          >
+            <p
+              style="
+                font-weight: bold;
+                margin-top: 0;
+                margin-bottom: 16px;
+                border-bottom: 2px dashed #000000;
+                padding-bottom: 10px;
+              "
+            >
+              WHAT AWAITS YOU:
+            </p>
+
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td width="40" valign="top" style="font-size: 24px; padding-bottom: 15px">💼</td>
+                <td style="padding-bottom: 15px; font-size: 14px">
+                  <strong>Dual Workspace:</strong><br />Instantly switch between your
+                  <span style="background-color: #ffc8a2; padding: 0 4px">Pro</span> and
+                  <span style="background-color: #88d8b0; padding: 0 4px">Personal</span> tasks.
+                </td>
+              </tr>
+              <tr>
+                <td width="40" valign="top" style="font-size: 24px; padding-bottom: 15px">🖱️</td>
+                <td style="padding-bottom: 15px; font-size: 14px">
+                  <strong>Smooth Drag & Drop:</strong><br />Drag, drop and organize your cards
+                  intuitively.
+                </td>
+              </tr>
+              <tr>
+                <td width="40" valign="top" style="font-size: 24px">☁️</td>
+                <td style="font-size: 14px">
+                  <strong>Synchronized:</strong><br />Access your tasks anywhere, anytime.
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <p
+            style="
+              font-size: 12px;
+              color: #666;
+              margin-top: 32px;
+              text-align: center;
+              font-family: 'Courier New', Courier, monospace;
+            "
+          >
+            // If the button doesn't work, copy this link:<br />
+            <a href="{{ .ConfirmationURL }}" style="color: #000000; text-decoration: underline"
+              >{{ .ConfirmationURL }}</a
+            >
+          </p>
         </div>
 
-        <p style="font-size: 12px; color: #666; margin-top: 32px; text-align: center; font-family: 'Courier New', Courier, monospace;">
-          // If the button doesn't work, copy this link:<br>
-          <a href="{{ .ConfirmationURL }}" style="color: #000000; text-decoration: underline;">{{ .ConfirmationURL }}</a>
-        </p>
-      </div>
-
-      <div style="background-color: #E0EBDD; border-top: 2px solid #000000; padding: 10px; text-align: center; font-size: 11px; color: #000000;">
-        SYSTEM STATUS: ONLINE | © 2026 KANBAN VIBECODE
+        <div
+          style="
+            background-color: #e0ebdd;
+            border-top: 2px solid #000000;
+            padding: 10px;
+            text-align: center;
+            font-size: 11px;
+            color: #000000;
+          "
+        >
+          SYSTEM STATUS: ONLINE | © 2026 KANBAN VIBECODE
+        </div>
       </div>
     </div>
-  </div>
-
-</body>
+  </body>
 </html>

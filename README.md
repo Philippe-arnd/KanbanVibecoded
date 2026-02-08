@@ -25,16 +25,19 @@ An intuitive Kanban-style task management application, with a retro computer sty
 This version introduces automated testing and enhanced deployment configurations.
 
 ### 🧪 Automated Testing
+
 - **Vitest & Supertest**: Full integration for backend and API testing.
 - **Security Tests**: Validation of auth flows and resource protection.
 - **Pre-commit Checks**: Run `npm test` to ensure stability.
 
 ### 🏗️ Monorepo Structure
+
 - **Client**: Vite-powered React application in `/client`.
 - **Server**: Node.js/Express backend in `/server`.
 - **Scripts**: Utility scripts for database seeding and management in `/scripts`.
 
 ### 🐳 Docker & Local Dev
+
 - **Dockerized**: Full `Dockerfile` and `docker-compose.yml`.
 - **Local Overrides**: Support for `docker-compose.override.yml` for custom port mapping and local dev environments.
 - **CI/CD**: GitHub Actions for automated testing and deployment.
@@ -42,12 +45,14 @@ This version introduces automated testing and enhanced deployment configurations
 ## Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/Philippe-arnd/KanbanVibecoded.git
    cd KanbanVibecoded
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
@@ -56,15 +61,17 @@ This version introduces automated testing and enhanced deployment configurations
    Create a `.env` file at the root and configure your database and auth (see `.env.example`).
 
 4. Run tests:
+
    ```bash
    npm test
    ```
 
 5. Start the application:
+
    ```bash
    # Development (Vite + Node)
    npm run dev
-   
+
    # Or via Docker
    docker-compose up -d
    ```
@@ -80,11 +87,13 @@ This version introduces automated testing and enhanced deployment configurations
 ## Deployment (CI/CD)
 
 ### Vercel (Frontend/Fullstack)
+
 1. Connect your GitHub repository to Vercel.
 2. The `vercel.json` file handles the configuration.
 3. Add environment variables in settings.
 
 ### Docker / Coolify (Self-hosted)
+
 1. Use the provided `docker-compose.yml` for self-hosted deployment.
 2. The application is served on port `3000` by default.
 3. Automatic database migrations and seeding are handled via the Docker entrypoint.
