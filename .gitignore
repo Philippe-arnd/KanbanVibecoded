@@ -32,8 +32,10 @@ coverage/
 *.sw?
 
 # AI / Workspace
-.claude/
 .cursor/
-.gemini/
 .geminiignore
+.gemini_security/
 kanban-app.code-workspace
+
+# Local Docker
+docker-compose.override.yml

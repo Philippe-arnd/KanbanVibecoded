@@ -12,6 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.set('trust proxy', true);
 const port = process.env.SERVER_PORT || 3000;
 
 app.use(cors({
@@ -50,7 +51,7 @@ app.get("/api/health", (req, res) => {
 });
 
 // Auth routes
-app.all(/\/api\/auth\/.*/, toNodeHandler(auth));
+app.all(/^\/api\/auth\/.*/, toNodeHandler(auth));
 
 // Middleware to check session
 const getSession = async (req, res, next) => {
@@ -142,7 +143,11 @@ app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, "../client/dist/index.html"));
 });
 
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Server running on port ${port}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(port, '0.0.0.0', () => {
+        console.log(`Server running on port ${port}`);
+    });
+}
+
+export { app };
 

@@ -20,18 +20,23 @@ An intuitive Kanban-style task management application, with a retro computer sty
 - **Cloud & Security**: Full authentication and account management (Better Auth + PostgreSQL).
 - **PWA Ready**: Installable on mobile and desktop with optimized icons and offline manifest.
 
-## What's New v2.1.0 - Architecture & Docker 💾☁️
+## What's New v2.2.0 - Testing & Reliability 🛡️✅
 
-This version 2.1 marks the transition to a clean monorepo-style architecture and full containerization.
+This version introduces automated testing and enhanced deployment configurations.
+
+### 🧪 Automated Testing
+- **Vitest & Supertest**: Full integration for backend and API testing.
+- **Security Tests**: Validation of auth flows and resource protection.
+- **Pre-commit Checks**: Run `npm test` to ensure stability.
 
 ### 🏗️ Monorepo Structure
 - **Client**: Vite-powered React application in `/client`.
 - **Server**: Node.js/Express backend in `/server`.
 - **Scripts**: Utility scripts for database seeding and management in `/scripts`.
 
-### 🐳 Docker & DevOps
-- **Dockerized**: Full `Dockerfile` and `docker-compose.yml` for easy deployment.
-- **Coolify Compatible**: Seamless deployment on self-hosted VPS.
+### 🐳 Docker & Local Dev
+- **Dockerized**: Full `Dockerfile` and `docker-compose.yml`.
+- **Local Overrides**: Support for `docker-compose.override.yml` for custom port mapping and local dev environments.
 - **CI/CD**: GitHub Actions for automated testing and deployment.
 
 ## Installation
@@ -50,9 +55,18 @@ This version 2.1 marks the transition to a clean monorepo-style architecture and
 3. Configure the environment:
    Create a `.env` file at the root and configure your database and auth (see `.env.example`).
 
-4. Start the application in development mode:
+4. Run tests:
    ```bash
+   npm test
+   ```
+
+5. Start the application:
+   ```bash
+   # Development (Vite + Node)
    npm run dev
+   
+   # Or via Docker
+   docker-compose up -d
    ```
 
 ## Technologies
