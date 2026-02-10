@@ -4,55 +4,55 @@ import { fileURLToPath } from 'url'
 import pg from 'pg'
 import dotenv from 'dotenv'
 
-// Charger le .env s'il existe
+// On charge le .env mais on va privilégier les variables système
 dotenv.config()
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 async function applyRLS() {
-  console.log('--- Application des politiques RLS ---')
+  console.log('--- 🔍 Diagnostic des URLs de Connexion ---')
 
-  // Gérer les chaînes vides (cas fréquent avec Docker/Coolify)
-  const envAdminUrl = process.env.ADMIN_DATABASE_URL && process.env.ADMIN_DATABASE_URL.trim() !== "" 
-    ? process.env.ADMIN_DATABASE_URL 
-    : null;
-    
-  const envStandardUrl = process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== ""
-    ? process.env.DATABASE_URL
-    : null;
+  const envAdminUrl = process.env.ADMIN_DATABASE_URL;
+  const envStandardUrl = process.env.DATABASE_URL;
 
-  const connectionString = envAdminUrl || envStandardUrl
+  const mask = (url) => url ? url.replace(/:([^:@]+)@/, ':****@') : 'NON DÉFINIE';
+  
+  console.log(`🔗 ADMIN_DATABASE_URL : ${mask(envAdminUrl)}`);
+  console.log(`🔗 DATABASE_URL       : ${mask(envStandardUrl)}`);
 
-  if (!connectionString) {
-    console.error('❌ Erreur : Aucune URL de base de données trouvée (DATABASE_URL ou ADMIN_DATABASE_URL).')
-    process.exit(1)
+  if (envAdminUrl === envStandardUrl && envAdminUrl) {
+    console.warn('⚠️ ATTENTION : ADMIN_DATABASE_URL est identique à DATABASE_URL !');
+    console.warn('👉 Le script utilisera l\'utilisateur limité "kanban_app" au lieu de l\'admin.');
   }
 
-  if (envAdminUrl) {
-    console.log('ℹ️ Utilisation de ADMIN_DATABASE_URL (détectée comme non-vide).')
-  } else {
-    console.warn('⚠️ ADMIN_DATABASE_URL est vide ou non-définie. Utilisation de DATABASE_URL.')
+  const connectionString = (envAdminUrl && envAdminUrl.trim() !== "") ? envAdminUrl : envStandardUrl;
+
+  if (!connectionString) {
+    console.error('❌ Erreur : Aucune URL de connexion trouvée.');
+    process.exit(1)
   }
 
   const pool = new pg.Pool({ connectionString })
 
   try {
-    const { rows } = await pool.query('SELECT current_user')
-    console.log(`👤 Connecté en tant que : ${rows[0].current_user}`)
+    const { rows } = await pool.query('SELECT current_user, current_database()')
+    console.log(`👤 Utilisateur SQL effectif : ${rows[0].current_user}`)
+    console.log(`🗄️ Base de données : ${rows[0].current_database}`)
+
+    if (rows[0].current_user === 'kanban_app') {
+      console.error('❌ ERREUR : L\'utilisateur connecté est "kanban_app". L\'ALTER TABLE va échouer.');
+      console.error('👉 Veuillez vérifier vos variables d\'environnement dans Coolify.');
+    }
 
     const sqlPath = path.join(__dirname, 'apply-rls.sql')
     const sql = fs.readFileSync(sqlPath, 'utf8')
 
-    console.log('🛠️ Exécution du script SQL (ALTER TABLE, etc.)...')
+    console.log('🛠️ Application des règles RLS...')
     await pool.query(sql)
-    console.log('✅ Politiques RLS appliquées avec succès.')
+    console.log('✅ Succès !')
   } catch (error) {
-    console.error('❌ Erreur RLS :', error.message)
-    if (error.code === '42501') {
-      console.error('👉 Permission refusée : L\'utilisateur n\'est pas propriétaire de la table "tasks".')
-      console.error('👉 Vérifiez que ADMIN_DATABASE_URL utilise bien l\'utilisateur "postgres" ou le propriétaire initial des tables.')
-    }
+    console.error('❌ ÉCHEC :', error.message)
     process.exit(1)
   } finally {
     await pool.end()
