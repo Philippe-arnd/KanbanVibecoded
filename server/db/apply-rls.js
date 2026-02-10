@@ -10,8 +10,11 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 async function applyRLS() {
+  // Utilise l'URL admin pour avoir les privilèges de modifier les tables (ALTER TABLE)
+  const connectionString = process.env.ADMIN_DATABASE_URL || process.env.DATABASE_URL
+  
   const pool = new pg.Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: connectionString,
   })
 
   try {
