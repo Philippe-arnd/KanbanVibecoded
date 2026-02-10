@@ -6,12 +6,13 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-// Fonction utilitaire pour extraire l'utilisateur d'une URL (pour le debug)
+// Fonction utilitaire robuste pour extraire l'utilisateur d'une URL
 const getUsername = (url) => {
   try {
     if (!url) return 'NON DÉFINIE';
-    const match = url.match(/postgres:\/\/([^:]+):/);
-    return match ? match[1] : 'INCONNU';
+    // Supporte postgres:// et postgresql://
+    const match = url.match(/^postgres(?:ql)?:\/\/([^:]+):/);
+    return match ? match[1] : `FORMAT INVALIDE (${url.substring(0, 15)}...)`;
   } catch {
     return 'ERREUR PARSE';
   }
@@ -29,13 +30,13 @@ const pool = new pg.Pool({
 })
 export const db = drizzle(pool, { schema })
 
-// Connexion Admin - On force l'utilisation de ADMIN_DATABASE_URL si elle est présente
-const adminConnectionString = (rawAdminUrl && rawAdminUrl.trim() !== "")
-  ? rawAdminUrl
-  : rawStandardUrl;
+// Connexion Admin
+// On considère la variable comme présente uniquement si elle n'est pas vide
+const hasAdminUrl = rawAdminUrl && rawAdminUrl.trim().length > 0;
+const adminConnectionString = hasAdminUrl ? rawAdminUrl : rawStandardUrl;
 
-if (adminConnectionString === rawStandardUrl && !rawAdminUrl) {
-    console.warn("[DB Init] ADMIN_DATABASE_URL manquante, repli sur DATABASE_URL.");
+if (!hasAdminUrl) {
+    console.warn("[DB Init] ADMIN_DATABASE_URL est vide ou absente, repli sur DATABASE_URL.");
 }
 
 const adminPool = new pg.Pool({

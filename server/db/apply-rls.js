@@ -19,13 +19,16 @@ async function applyRLS() {
         
         console.log("[RLS] Policies applied successfully.");
     } catch (error) {
-        console.error("[RLS] Error applying policies:", error);
-        // On quitte avec un code d'erreur car en prod c'est critique
+        console.error("[RLS] Error applying policies:");
+        if (error.originalError) {
+            console.error("Detail:", error.originalError.message);
+        } else {
+            console.error(error);
+        }
         process.exit(1);
     }
 }
 
 applyRLS().then(() => {
-    console.log("[RLS] Script finished.");
     process.exit(0);
 });
