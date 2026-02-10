@@ -8,6 +8,7 @@ services:
     environment:
       - SERVER_PORT=3000
       - 'DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-kanban_prod}'
+      - 'ADMIN_DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-kanban_prod}'
       - 'VITE_ENCRYPTION_KEY=${VITE_ENCRYPTION_KEY}'
       - 'BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}'
       - 'BETTER_AUTH_URL=${SERVICE_URL_APP}'
