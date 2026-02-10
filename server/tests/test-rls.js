@@ -1,7 +1,20 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { db, withRLS } from '../db/index.js'
+import { describe, it, before, after } from 'node:test'
+import assert from 'node:assert'
+import pg from 'pg'
+import { drizzle } from 'drizzle-orm/node-postgres'
+import { withRLS } from '../db/index.js'
 import { user, tasks } from '../db/schema.js'
+import * as schema from '../db/schema.js'
 import { eq, sql } from 'drizzle-orm'
+import dotenv from 'dotenv'
+
+dotenv.config()
+
+// Create an Admin DB instance for setup/verification (bypassing RLS)
+const adminPool = new pg.Pool({
+  connectionString: process.env.ADMIN_DATABASE_URL || process.env.DATABASE_URL,
+})
+const dbAdmin = drizzle(adminPool, { schema })
 
 describe('PostgreSQL Row Level Security (RLS) Isolation', () => {
   const userA = {
@@ -22,26 +35,18 @@ describe('PostgreSQL Row Level Security (RLS) Isolation', () => {
     updatedAt: new Date(),
   }
 
-  beforeAll(async () => {
-    // Clean up any existing test data using admin privileges
-    await db.delete(tasks).where(sql`user_id IN (${userA.id}, ${userB.id})`)
-    await db.delete(user).where(sql`id IN (${userA.id}, ${userB.id})`)
-
-    // Create test users using admin privileges
-    await db.insert(user).values([userA, userB])
+  before(async () => {
+    console.log('--- Setup: Cleaning and creating test users ---')
+    await dbAdmin.delete(tasks).where(sql`user_id IN (${userA.id}, ${userB.id})`)
+    await dbAdmin.delete(user).where(sql`id IN (${userA.id}, ${userB.id})`)
+    await dbAdmin.insert(user).values([userA, userB])
   })
 
-  afterAll(async () => {
-    // Final cleanup using withRLS for each user to demonstrate it works
-    await withRLS(userA.id, async (tx) => {
-      await tx.delete(tasks).where(eq(tasks.userId, userA.id))
-    })
-    await withRLS(userB.id, async (tx) => {
-      await tx.delete(tasks).where(eq(tasks.userId, userB.id))
-    })
-    
-    // Delete users using admin privileges
-    await db.delete(user).where(sql`id IN (${userA.id}, ${userB.id})`)
+  after(async () => {
+    console.log('--- Cleanup: Removing test data ---')
+    await dbAdmin.delete(tasks).where(sql`user_id IN (${userA.id}, ${userB.id})`)
+    await dbAdmin.delete(user).where(sql`id IN (${userA.id}, ${userB.id})`)
+    await adminPool.end()
   })
 
   it('should only allow User A to see their own tasks', async () => {
@@ -58,48 +63,50 @@ describe('PostgreSQL Row Level Security (RLS) Isolation', () => {
     const userATasks = await withRLS(userA.id, async (tx) => {
       return await tx.select().from(tasks).where(eq(tasks.userId, userA.id))
     })
-    expect(userATasks).toHaveLength(1)
-    expect(userATasks[0].title).toBe('Task for User A')
+    assert.strictEqual(userATasks.length, 1, 'User A should see exactly 1 task')
+    assert.strictEqual(userATasks[0].title, 'Task for User A')
 
-    // 3. User B should NOT see User A's task, even if they filter for it
+    // 3. User B should NOT see User A's task
     const userBTasksSeeingA = await withRLS(userB.id, async (tx) => {
       return await tx.select().from(tasks).where(eq(tasks.userId, userA.id))
     })
-    expect(userBTasksSeeingA).toHaveLength(0)
+    assert.strictEqual(userBTasksSeeingA.length, 0, 'User B should see 0 tasks of User A')
 
-    // 4. User B should see 0 tasks if they query all
+    // 4. User B should see 0 tasks in total (if they have none)
     const allUserBTasks = await withRLS(userB.id, async (tx) => {
       return await tx.select().from(tasks)
     })
-    expect(allUserBTasks).toHaveLength(0)
+    assert.strictEqual(allUserBTasks.length, 0, 'User B should see 0 tasks in total')
   })
 
   it('should prevent User B from updating User A tasks', async () => {
-    // Find the task ID created by User A
-    const taskA = (await db.select().from(tasks).where(eq(tasks.userId, userA.id)))[0]
+    // Fetch task ID using Admin connection
+    const taskA = (await dbAdmin.select().from(tasks).where(eq(tasks.userId, userA.id)))[0]
+    assert.ok(taskA, "Task A should exist in DB")
     
     // User B tries to update it
-    const updateResult = await withRLS(userB.id, async (tx) => {
-      return await tx.update(tasks)
+    await withRLS(userB.id, async (tx) => {
+      await tx.update(tasks)
         .set({ title: 'Hacked by User B' })
         .where(eq(tasks.id, taskA.id))
     })
     
-    // In RLS, an update that matches 0 rows (due to isolation) returns successfully but affects 0 rows
-    // Wait, with Drizzle it might depend on the driver. Let's check the data.
-    
-    const taskAfterHack = (await db.select().from(tasks).where(eq(tasks.id, taskA.id)))[0]
-    expect(taskAfterHack.title).toBe('Task for User A')
+    // Verify using Admin connection that title did NOT change
+    const taskAfterHack = (await dbAdmin.select().from(tasks).where(eq(tasks.id, taskA.id)))[0]
+    assert.strictEqual(taskAfterHack.title, 'Task for User A', 'Task title should not have changed')
   })
   
   it('should prevent User B from deleting User A tasks', async () => {
-    const taskA = (await db.select().from(tasks).where(eq(tasks.userId, userA.id)))[0]
+    const taskA = (await dbAdmin.select().from(tasks).where(eq(tasks.userId, userA.id)))[0]
+    assert.ok(taskA, "Task A should exist in DB")
     
+    // User B tries to delete it
     await withRLS(userB.id, async (tx) => {
       await tx.delete(tasks).where(eq(tasks.id, taskA.id))
     })
     
-    const taskAfterDelete = (await db.select().from(tasks).where(eq(tasks.id, taskA.id)))[0]
-    expect(taskAfterDelete).toBeDefined()
+    // Verify using Admin connection that task still exists
+    const taskAfterDelete = (await dbAdmin.select().from(tasks).where(eq(tasks.id, taskA.id)))[0]
+    assert.ok(taskAfterDelete, 'Task should still exist after unauthorized delete attempt')
   })
 })

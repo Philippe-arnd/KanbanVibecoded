@@ -20,15 +20,24 @@ An intuitive Kanban-style task management application, with a retro computer sty
 - **Cloud & Security**: Full authentication and account management (Better Auth + PostgreSQL).
 - **PWA Ready**: Installable on mobile and desktop with optimized icons and offline manifest.
 
-## What's New v2.2.0 - Testing & Reliability 🛡️✅
+## What's New v2.3.0 - Hardened Isolation (RLS) 🛡️🔒
 
-This version introduces automated testing and enhanced deployment configurations.
+This version focuses on data security and multi-tenant isolation at the database level.
 
-### 🧪 Automated Testing
+### 🔐 PostgreSQL Row Level Security (RLS)
 
-- **Vitest & Supertest**: Full integration for backend and API testing.
-- **Security Tests**: Validation of auth flows and resource protection.
-- **Pre-commit Checks**: Run `npm test` to ensure stability.
+- **Database-Level Isolation**: Every user query is restricted at the PostgreSQL engine level using RLS policies.
+- **withRLS Helper**: A new transactional helper ensures all sensitive operations carry the user context.
+- **Defense in Depth**: Even if the application logic is bypassed, the database denies access to data not owned by the current user.
+
+### 🧪 Enhanced Testing
+
+- **RLS Integration Tests**: Specific tests to verify cross-user data isolation.
+- **Native Node Test Runner**: Tests use `node:test` for compatibility in production/minimal environments.
+- **How to run RLS tests**:
+  ```bash
+  node server/tests/test-rls.js
+  ```
 
 ### 🏗️ Monorepo Structure
 
