@@ -4,7 +4,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { toNodeHandler } from 'better-auth/node'
 import { auth } from './auth.js'
-import { db } from './db/index.js'
+import { db, withRLS } from './db/index.js'
 import { tasks } from './db/schema.js'
 import { eq, and } from 'drizzle-orm'
 
@@ -75,7 +75,9 @@ const getSession = async (req, res, next) => {
 // Tasks API
 app.get('/api/tasks', getSession, async (req, res) => {
   try {
-    const userTasks = await db.select().from(tasks).where(eq(tasks.userId, req.user.id))
+    const userTasks = await withRLS(req.user.id, async (tx) => {
+      return await tx.select().from(tasks).where(eq(tasks.userId, req.user.id))
+    })
     // Sort by position? Client does it but good to have consistent order
     userTasks.sort((a, b) => a.position - b.position)
     res.json(userTasks)
@@ -88,7 +90,9 @@ app.get('/api/tasks', getSession, async (req, res) => {
 app.post('/api/tasks', getSession, async (req, res) => {
   try {
     const newTask = { ...req.body, userId: req.user.id }
-    const result = await db.insert(tasks).values(newTask).returning()
+    const result = await withRLS(req.user.id, async (tx) => {
+      return await tx.insert(tasks).values(newTask).returning()
+    })
     res.json(result)
   } catch (e) {
     console.error('Create task error', e)
@@ -99,19 +103,17 @@ app.post('/api/tasks', getSession, async (req, res) => {
 app.put('/api/tasks/:id', getSession, async (req, res) => {
   try {
     const { id } = req.params
-    // Security check: ensure task belongs to user
-    const existing = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, req.user.id)))
-    if (!existing.length) {
-      return res.status(403).json({ error: 'Forbidden or Not Found' })
-    }
-
     // Remove userId from body to prevent ownership transfer via update
     const { userId: _userId, ...updateData } = req.body
 
-    const result = await db.update(tasks).set(updateData).where(eq(tasks.id, id)).returning()
+    const result = await withRLS(req.user.id, async (tx) => {
+      // RLS will automatically restrict this update to tasks owned by req.user.id
+      return await tx.update(tasks).set(updateData).where(eq(tasks.id, id)).returning()
+    })
+
+    if (!result.length) {
+      return res.status(403).json({ error: 'Forbidden or Not Found' })
+    }
     res.json(result)
   } catch (e) {
     console.error('Update task error', e)
@@ -122,15 +124,14 @@ app.put('/api/tasks/:id', getSession, async (req, res) => {
 app.delete('/api/tasks/:id', getSession, async (req, res) => {
   try {
     const { id } = req.params
-    const existing = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, req.user.id)))
-    if (!existing.length) {
+    const result = await withRLS(req.user.id, async (tx) => {
+      // RLS will automatically restrict this delete to tasks owned by req.user.id
+      return await tx.delete(tasks).where(eq(tasks.id, id)).returning()
+    })
+
+    if (!result.length) {
       return res.status(403).json({ error: 'Forbidden or Not Found' })
     }
-
-    await db.delete(tasks).where(eq(tasks.id, id))
     res.json({ success: true })
   } catch (e) {
     console.error('Delete task error', e)
