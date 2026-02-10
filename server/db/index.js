@@ -6,19 +6,24 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
+// Connexion standard (utilisateur limité)
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
 })
-
 export const db = drizzle(pool, { schema })
+
+// Connexion Admin (utilisateur propriétaire/postgres)
+const adminConnectionString = (process.env.ADMIN_DATABASE_URL && process.env.ADMIN_DATABASE_URL.trim() !== "")
+  ? process.env.ADMIN_DATABASE_URL
+  : process.env.DATABASE_URL;
+
+const adminPool = new pg.Pool({
+  connectionString: adminConnectionString,
+})
+export const adminDb = drizzle(adminPool, { schema })
 
 /**
  * Executes database operations within a transaction with Row Level Security (RLS) context.
- * Sets 'app.current_user_id' for the duration of the transaction.
- * 
- * @param {string} userId - The ID of the user to set in the RLS context.
- * @param {function} callback - A callback function that receives the transaction object.
- * @returns {Promise<any>} - The result of the callback.
  */
 export async function withRLS(userId, callback) {
   return await db.transaction(async (tx) => {
