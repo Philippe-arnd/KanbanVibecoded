@@ -6,49 +6,37 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-// Fonction utilitaire robuste pour extraire l'utilisateur d'une URL
 const getUsername = (url) => {
   try {
     if (!url) return 'NON DÉFINIE';
-    // Supporte postgres:// et postgresql://
     const match = url.match(/^postgres(?:ql)?:\/\/([^:]+):/);
-    return match ? match[1] : `FORMAT INVALIDE (${url.substring(0, 15)}...)`;
-  } catch {
-    return 'ERREUR PARSE';
-  }
+    return match ? match[1] : 'FORMAT INVALIDE';
+  } catch { return 'ERREUR'; }
 };
 
 const rawAdminUrl = process.env.ADMIN_DATABASE_URL;
 const rawStandardUrl = process.env.DATABASE_URL;
 
-console.log(`[DB Init] User admin détecté : ${getUsername(rawAdminUrl)}`);
-console.log(`[DB Init] User standard détecté : ${getUsername(rawStandardUrl)}`);
+// Diagnostic pour comparer les URLs sans afficher les secrets
+console.log(`[DB Init] Admin User: ${getUsername(rawAdminUrl)}`);
+console.log(`[DB Init] Standard User: ${getUsername(rawStandardUrl)}`);
 
-// Connexion standard
-const pool = new pg.Pool({
-  connectionString: rawStandardUrl,
-})
-export const db = drizzle(pool, { schema })
-
-// Connexion Admin
-// On considère la variable comme présente uniquement si elle n'est pas vide
-const hasAdminUrl = rawAdminUrl && rawAdminUrl.trim().length > 0;
-const adminConnectionString = hasAdminUrl ? rawAdminUrl : rawStandardUrl;
-
-if (!hasAdminUrl) {
-    console.warn("[DB Init] ADMIN_DATABASE_URL est vide ou absente, repli sur DATABASE_URL.");
+if (rawAdminUrl === rawStandardUrl) {
+    console.warn("⚠️ ALERTE : ADMIN_DATABASE_URL est identique à DATABASE_URL dans l'environnement !");
 }
 
-const adminPool = new pg.Pool({
-  connectionString: adminConnectionString,
-})
-export const adminDb = drizzle(adminPool, { schema })
+// Connexion standard
+export const db = drizzle(new pg.Pool({ connectionString: rawStandardUrl }), { schema })
+
+// Connexion Admin - On utilise EXCLUSIVEMENT ADMIN_DATABASE_URL
+// Si elle est absente, on le dit clairement pour que le script RLS échoue
+export const adminDb = rawAdminUrl 
+    ? drizzle(new pg.Pool({ connectionString: rawAdminUrl }), { schema })
+    : null;
 
 export async function withRLS(userId, callback) {
   return await db.transaction(async (tx) => {
-    await tx.execute(
-      sql`SELECT set_config('app.current_user_id', ${userId}, true)`
-    )
+    await tx.execute(sql`SELECT set_config('app.current_user_id', ${userId}, true)`)
     return await callback(tx)
   })
 }

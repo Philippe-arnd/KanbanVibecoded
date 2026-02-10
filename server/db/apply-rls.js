@@ -8,27 +8,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function applyRLS() {
-    console.log("[RLS] Applying Row Level Security policies using Admin connection...");
+    console.log("[RLS] Applying Row Level Security policies...");
     
+    if (!adminDb) {
+        console.error("❌ ERREUR : adminDb n'est pas configuré. Vérifiez que ADMIN_DATABASE_URL est définie.");
+        process.exit(1);
+    }
+
     try {
         const sqlPath = path.join(__dirname, 'apply-rls.sql');
         const sqlContent = fs.readFileSync(sqlPath, 'utf8');
 
-        // On exécute le contenu du fichier SQL via adminDb
         await adminDb.execute(sql.raw(sqlContent));
-        
         console.log("[RLS] Policies applied successfully.");
     } catch (error) {
         console.error("[RLS] Error applying policies:");
-        if (error.originalError) {
-            console.error("Detail:", error.originalError.message);
-        } else {
-            console.error(error);
-        }
+        console.error(error.message || error);
         process.exit(1);
     }
 }
 
-applyRLS().then(() => {
-    process.exit(0);
-});
+applyRLS().then(() => process.exit(0));
