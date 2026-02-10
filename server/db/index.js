@@ -6,25 +6,43 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-// Connexion standard (utilisateur limité)
+// Fonction utilitaire pour extraire l'utilisateur d'une URL (pour le debug)
+const getUsername = (url) => {
+  try {
+    if (!url) return 'NON DÉFINIE';
+    const match = url.match(/postgres:\/\/([^:]+):/);
+    return match ? match[1] : 'INCONNU';
+  } catch {
+    return 'ERREUR PARSE';
+  }
+};
+
+const rawAdminUrl = process.env.ADMIN_DATABASE_URL;
+const rawStandardUrl = process.env.DATABASE_URL;
+
+console.log(`[DB Init] User admin détecté : ${getUsername(rawAdminUrl)}`);
+console.log(`[DB Init] User standard détecté : ${getUsername(rawStandardUrl)}`);
+
+// Connexion standard
 const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: rawStandardUrl,
 })
 export const db = drizzle(pool, { schema })
 
-// Connexion Admin (utilisateur propriétaire/postgres)
-const adminConnectionString = (process.env.ADMIN_DATABASE_URL && process.env.ADMIN_DATABASE_URL.trim() !== "")
-  ? process.env.ADMIN_DATABASE_URL
-  : process.env.DATABASE_URL;
+// Connexion Admin - On force l'utilisation de ADMIN_DATABASE_URL si elle est présente
+const adminConnectionString = (rawAdminUrl && rawAdminUrl.trim() !== "")
+  ? rawAdminUrl
+  : rawStandardUrl;
+
+if (adminConnectionString === rawStandardUrl && !rawAdminUrl) {
+    console.warn("[DB Init] ADMIN_DATABASE_URL manquante, repli sur DATABASE_URL.");
+}
 
 const adminPool = new pg.Pool({
   connectionString: adminConnectionString,
 })
 export const adminDb = drizzle(adminPool, { schema })
 
-/**
- * Executes database operations within a transaction with Row Level Security (RLS) context.
- */
 export async function withRLS(userId, callback) {
   return await db.transaction(async (tx) => {
     await tx.execute(
