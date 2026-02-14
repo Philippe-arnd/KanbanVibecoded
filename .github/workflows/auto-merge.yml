@@ -28,7 +28,7 @@ jobs:
             --head "$BRANCH" \
             --base main \
             --state open \
-            --json number,isDraft,mergeable \
+            --json number,isDraft,mergeable,labels \
             --repo "${{ github.repository }}" \
             2>/dev/null || echo "[]")
           PR_COUNT=$(echo "$PR_DATA" | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));console.log(d.length)")
@@ -47,6 +47,16 @@ jobs:
           fi
           if [ "$MERGEABLE" = "CONFLICTING" ]; then
             echo "PR #$PR_NUMBER has conflicts — skipping auto-merge"
+            echo "pr_number=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          HAS_MAJOR=$(echo "$PR_DATA" | node -e "
+            const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+            const labels=d[0].labels||[];
+            console.log(labels.some(l=>l.name==='major-update')?'true':'false');
+          ")
+          if [ "$HAS_MAJOR" = "true" ]; then
+            echo "PR #$PR_NUMBER has 'major-update' label — requires manual review, skipping auto-merge"
             echo "pr_number=" >> $GITHUB_OUTPUT
             exit 0
           fi
