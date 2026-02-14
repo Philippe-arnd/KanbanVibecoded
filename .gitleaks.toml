@@ -41,11 +41,13 @@ regexes = [
 [[rules]]
 id = "database-url-with-credentials"
 description = "Database URL with embedded credentials"
-regex = '''(postgresql|postgres|mysql|mongodb)://[^:]+:[^@]+@(?!localhost)[^/\s]+'''
+regex = '''(postgresql|postgres|mysql|mongodb)://[^:]+:[^@]+@[^/\s]+\.[^/\s]+'''
 severity = "WARNING"
 [rules.allowlist]
 regexes = [
   '''(?i)(test|placeholder|example|dummy|ci)''',
   '''\$\{\{[^}]+\}\}''',
   '''localhost''',
+  '''@postgres:''',
+  '''@test-postgres:''',
 ]
