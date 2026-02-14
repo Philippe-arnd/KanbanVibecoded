@@ -109,6 +109,8 @@ Tasks are encrypted client-side using `VITE_ENCRYPTION_KEY` (`client/src/utils/c
 - `drizzle-kit push` in CI needs `--force` flag (non-interactive)
 - `workflow_run` trigger only fires from workflows on the default branch (bootstrap limitation)
 - Docker: use `-p 3000` (no fixed host port), get dynamic port with `docker port <container> 3000 | cut -d: -f2`
+- `format()` in GHA outputs literal `\n` — NOT real newlines. For multi-line markdown in `body: |` blocks, put each row on its own YAML line with a separate `${{ }}` expression
+- When renaming workflow job names, update BOTH `auto-merge.yml` required checks AND GitHub branch protection rules via API (`gh api repos/.../branches/main/protection/required_status_checks/contexts --method PUT`)
 
 **Required checks for auto-merge (6 total):** "✅ Quick Checks", "🧪 Vitest Tests", "🔒 RLS Tests", "🔑 Secret Detection", "🛡️ Security Scan", "🔎 Review Dependencies for Vulnerabilities"
 
