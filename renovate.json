@@ -16,8 +16,7 @@
     {
       "matchPackageNames": ["*"],
       "matchUpdateTypes": ["major"],
-      "automerge": false,
-      "separateMajorMinor": true
+      "automerge": false
     }
   ]
 }
