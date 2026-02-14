@@ -103,7 +103,7 @@ Posts/updates a single comment (sentinel: `<!-- ci-test-results -->`) via `peter
 
 **The comment includes:**
 - Status table for all 3 check jobs (Lint & Build, Vitest Tests, RLS Tests)
-- Coverage breakdown (Lines, Statements, Functions, Branches percentages)
+- Coverage table with 3 columns: Metric, Coverage %, and Status (✅ if ≥80%, ❌ if below)
 - 📥 Direct link to the workflow run where the coverage artifact can be downloaded
 
 ---
