@@ -36,7 +36,7 @@ This version focuses on data security and multi-tenant isolation at the database
 - **Native Node Test Runner**: Tests use `node:test` for compatibility in production/minimal environments.
 - **How to run RLS tests**:
   ```bash
-  node server/tests/test-rls.js
+  node --test server/tests/test-rls.js
   ```
 
 ### 🏗️ Monorepo Structure
@@ -94,12 +94,6 @@ This version focuses on data security and multi-tenant isolation at the database
 - **Utilities**: @dnd-kit, Lucide React, Docker.
 
 ## Deployment (CI/CD)
-
-### Vercel (Frontend/Fullstack)
-
-1. Connect your GitHub repository to Vercel.
-2. The `vercel.json` file handles the configuration.
-3. Add environment variables in settings.
 
 ### Docker / Coolify (Self-hosted)
 
