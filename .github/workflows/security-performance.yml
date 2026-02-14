@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 2
     steps:
       - name: 📥 Checkout code (full history)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -37,7 +37,7 @@ jobs:
       security-events: write
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 🛡️ Run Semgrep
         id: semgrep
@@ -81,7 +81,7 @@ jobs:
       css_warn: ${{ steps.bundle.outputs.css_warn }}
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
