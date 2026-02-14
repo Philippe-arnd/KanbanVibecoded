@@ -11,24 +11,24 @@ concurrency:
 
 jobs:
   secret-detection:
-    name: Secret Detection
+    name: 🔑 Secret Detection
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code (full history)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Run Gitleaks
+      - name: 🔍 Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: .gitleaks.toml
 
   security-scan:
-    name: Security Scan
+    name: 🛡️ Security Scan
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 3
@@ -36,10 +36,10 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Semgrep
+      - name: 🛡️ Run Semgrep
         id: semgrep
         uses: semgrep/semgrep-action@v1
         continue-on-error: true
@@ -52,74 +52,93 @@ jobs:
             .semgrep.yml
           generateSarif: '1'
 
-      - name: Upload SARIF results
+      - name: 📤 Upload SARIF results
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep.sarif
         continue-on-error: true
 
-      - name: Fail if Semgrep found critical issues
+      - name: ❌ Fail if Semgrep found critical issues
         if: steps.semgrep.outcome == 'failure'
         run: |
           echo "Semgrep security scan failed with critical findings."
           exit 1
 
   bundle-size:
-    name: Bundle Size
+    name: 📦 Bundle Size
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      js_kb: ${{ steps.bundle.outputs.js_kb }}
+      css_kb: ${{ steps.bundle.outputs.css_kb }}
+      js_limit_kb: ${{ steps.bundle.outputs.js_limit_kb }}
+      css_limit_kb: ${{ steps.bundle.outputs.css_limit_kb }}
+      js_pct: ${{ steps.bundle.outputs.js_pct }}
+      css_pct: ${{ steps.bundle.outputs.css_pct }}
+      js_warn: ${{ steps.bundle.outputs.js_warn }}
+      css_warn: ${{ steps.bundle.outputs.css_warn }}
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: npm ci
 
-      - name: Build
+      - name: 🏗️ Build
         run: npm run build
         env:
           VITE_ENCRYPTION_KEY: ci-dummy-key
 
-      - name: Measure bundle size
+      - name: 📏 Measure bundle size
         id: bundle
         run: |
           JS_LIMIT=600000
           CSS_LIMIT=80000
           JS_SIZE=$(find client/dist/assets -name '*.js' -exec wc -c {} + 2>/dev/null | tail -1 | awk '{print $1}' || echo 0)
           CSS_SIZE=$(find client/dist/assets -name '*.css' -exec wc -c {} + 2>/dev/null | tail -1 | awk '{print $1}' || echo 0)
-          echo "js_size=$JS_SIZE" >> $GITHUB_OUTPUT
-          echo "css_size=$CSS_SIZE" >> $GITHUB_OUTPUT
+          JS_KB=$(( JS_SIZE / 1024 ))
+          CSS_KB=$(( CSS_SIZE / 1024 ))
+          JS_LIMIT_KB=$(( JS_LIMIT / 1024 ))
+          CSS_LIMIT_KB=$(( CSS_LIMIT / 1024 ))
+          JS_PCT=$(( JS_SIZE * 100 / JS_LIMIT ))
+          CSS_PCT=$(( CSS_SIZE * 100 / CSS_LIMIT ))
           JS_WARN=false
           CSS_WARN=false
           if [ "$JS_SIZE" -gt "$JS_LIMIT" ]; then
-            echo "WARNING: JS bundle size ${JS_SIZE} bytes exceeds limit of ${JS_LIMIT} bytes"
+            echo "WARNING: JS bundle ${JS_KB} KB exceeds limit of ${JS_LIMIT_KB} KB"
             JS_WARN=true
           fi
           if [ "$CSS_SIZE" -gt "$CSS_LIMIT" ]; then
-            echo "WARNING: CSS bundle size ${CSS_SIZE} bytes exceeds limit of ${CSS_LIMIT} bytes"
+            echo "WARNING: CSS bundle ${CSS_KB} KB exceeds limit of ${CSS_LIMIT_KB} KB"
             CSS_WARN=true
           fi
+          echo "js_kb=$JS_KB" >> $GITHUB_OUTPUT
+          echo "css_kb=$CSS_KB" >> $GITHUB_OUTPUT
+          echo "js_limit_kb=$JS_LIMIT_KB" >> $GITHUB_OUTPUT
+          echo "css_limit_kb=$CSS_LIMIT_KB" >> $GITHUB_OUTPUT
+          echo "js_pct=$JS_PCT" >> $GITHUB_OUTPUT
+          echo "css_pct=$CSS_PCT" >> $GITHUB_OUTPUT
           echo "js_warn=$JS_WARN" >> $GITHUB_OUTPUT
           echo "css_warn=$CSS_WARN" >> $GITHUB_OUTPUT
 
   generate-report:
-    name: Generate Security Report
+    name: 📋 Security Report
     needs: [secret-detection, security-scan, bundle-size]
     if: always() && github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
     steps:
-      - name: Find existing PR comment
+      - name: 🔍 Find existing PR comment
         id: find-comment
         uses: peter-evans/find-comment@v3
         with:
@@ -127,7 +146,7 @@ jobs:
           comment-author: 'github-actions[bot]'
           body-includes: '<!-- ci-security-report -->'
 
-      - name: Post security report comment
+      - name: 💬 Post security report comment
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
@@ -135,16 +154,16 @@ jobs:
           edit-mode: replace
           body: |
             <!-- ci-security-report -->
-            ## Security & Performance Report
+            ## 🔐 Security & Performance Report
 
             | Check | Status |
             |-------|--------|
-            | Secret Detection | ${{ needs.secret-detection.result == 'success' && '✅ Passed' || needs.secret-detection.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |
-            | Security Scan | ${{ needs.security-scan.result == 'success' && '✅ Passed' || needs.security-scan.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |
-            | Bundle Size (JS) | ${{ needs.bundle-size.result == 'success' && (needs.bundle-size.outputs.js_warn == 'true' && format('⚠️ {0} bytes (over limit)', needs.bundle-size.outputs.js_size) || format('✅ {0} bytes', needs.bundle-size.outputs.js_size)) || '❓ N/A' }} |
-            | Bundle Size (CSS) | ${{ needs.bundle-size.result == 'success' && (needs.bundle-size.outputs.css_warn == 'true' && format('⚠️ {0} bytes (over limit)', needs.bundle-size.outputs.css_size) || format('✅ {0} bytes', needs.bundle-size.outputs.css_size)) || '❓ N/A' }} |
+            | 🔑 Secret Detection | ${{ needs.secret-detection.result == 'success' && '✅ Passed' || needs.secret-detection.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |
+            | 🛡️ Security Scan | ${{ needs.security-scan.result == 'success' && '✅ Passed' || needs.security-scan.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |
+            | 📦 JS Bundle | ${{ needs.bundle-size.result == 'success' && (needs.bundle-size.outputs.js_warn == 'true' && format('⚠️ {0} KB / {1} KB ({2}%) — over limit', needs.bundle-size.outputs.js_kb, needs.bundle-size.outputs.js_limit_kb, needs.bundle-size.outputs.js_pct) || format('✅ {0} KB / {1} KB ({2}%)', needs.bundle-size.outputs.js_kb, needs.bundle-size.outputs.js_limit_kb, needs.bundle-size.outputs.js_pct)) || '❓ N/A' }} |
+            | 🎨 CSS Bundle | ${{ needs.bundle-size.result == 'success' && (needs.bundle-size.outputs.css_warn == 'true' && format('⚠️ {0} KB / {1} KB ({2}%) — over limit', needs.bundle-size.outputs.css_kb, needs.bundle-size.outputs.css_limit_kb, needs.bundle-size.outputs.css_pct) || format('✅ {0} KB / {1} KB ({2}%)', needs.bundle-size.outputs.css_kb, needs.bundle-size.outputs.css_limit_kb, needs.bundle-size.outputs.css_pct)) || '❓ N/A' }} |
 
-      - name: Fail if blocking checks failed
+      - name: ❌ Fail if blocking checks failed
         if: needs.secret-detection.result == 'failure' || needs.security-scan.result == 'failure'
         run: |
           echo "One or more blocking security checks failed."

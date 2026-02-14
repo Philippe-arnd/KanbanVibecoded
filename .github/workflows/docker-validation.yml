@@ -15,28 +15,28 @@ concurrency:
 
 jobs:
   build-and-validate:
-    name: Build & Validate Docker Image
+    name: 🐳 Build & Validate Docker Image
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
+      - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: 🏗️ Build Docker image
         run: |
           docker build \
             --build-arg VITE_ENCRYPTION_KEY=ci-dummy-key \
             --tag kanban-app:ci-test \
             .
 
-      - name: Create Docker network
+      - name: 🌐 Create Docker network
         run: docker network create kanban-test-net
 
-      - name: Start PostgreSQL container
+      - name: 🛢️ Start PostgreSQL container
         run: |
           docker run -d \
             --name test-postgres \
@@ -46,19 +46,19 @@ jobs:
             -e POSTGRES_DB=kanban_test \
             postgres:17-alpine
 
-      - name: Wait for PostgreSQL to be ready
+      - name: ⏳ Wait for PostgreSQL to be ready
         run: |
           until docker exec test-postgres pg_isready -U postgres; do
             echo "Waiting for postgres..."
             sleep 2
           done
 
-      - name: Create app_user in test database
+      - name: 👤 Create app_user in test database
         run: |
           docker exec test-postgres psql -U postgres -d kanban_test -c \
             "CREATE USER app_user WITH PASSWORD 'app_password'; GRANT CONNECT ON DATABASE kanban_test TO app_user;"
 
-      - name: Start application container
+      - name: 🚀 Start application container
         run: |
           docker run -d \
             --name test-app \
@@ -71,14 +71,14 @@ jobs:
             -e NODE_ENV=production \
             kanban-app:ci-test
 
-      - name: Get dynamic application port
+      - name: 🔌 Get dynamic application port
         id: get-port
         run: |
           APP_PORT=$(docker port test-app 3000 | cut -d: -f2)
           echo "app_port=$APP_PORT" >> $GITHUB_OUTPUT
           echo "App is available on port $APP_PORT"
 
-      - name: Wait for application to be healthy
+      - name: 🏥 Wait for application to be healthy
         run: |
           APP_PORT="${{ steps.get-port.outputs.app_port }}"
           for i in $(seq 1 30); do
@@ -93,7 +93,7 @@ jobs:
           docker logs test-app
           exit 1
 
-      - name: Cleanup containers and network
+      - name: 🧹 Cleanup containers and network
         if: always()
         run: |
           docker stop test-app test-postgres 2>/dev/null || true
