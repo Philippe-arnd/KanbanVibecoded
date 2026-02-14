@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 2
     steps:
       - name: 📥 Checkout code (full history)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -37,7 +37,7 @@ jobs:
       security-events: write
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 🛡️ Run Semgrep
         id: semgrep
@@ -54,7 +54,7 @@ jobs:
 
       - name: 📤 Upload SARIF results
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: semgrep.sarif
         continue-on-error: true
@@ -81,10 +81,10 @@ jobs:
       css_warn: ${{ steps.bundle.outputs.css_warn }}
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: 'npm'
@@ -140,14 +140,14 @@ jobs:
     steps:
       - name: 🔍 Find existing PR comment
         id: find-comment
-        uses: peter-evans/find-comment@v3
+        uses: peter-evans/find-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
           body-includes: '<!-- ci-security-report -->'
 
       - name: 💬 Post security report comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
