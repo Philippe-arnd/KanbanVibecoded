@@ -3,16 +3,22 @@
   "extends": ["config:recommended"],
   "timezone": "Europe/Paris",
   "schedule": ["before 8am on monday"],
-  "automerge": true,
-  "automergeType": "pr",
-  "platformAutomerge": true,
-  "groupName": "all dependencies",
-  "groupSlug": "all-dependencies",
   "packageRules": [
     {
-      "groupName": "all dependencies",
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-non-major-dependencies",
+      "matchPackageNames": ["*"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "automerge": true,
-      "matchPackageNames": ["*"]
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "groupName": "all major dependencies",
+      "groupSlug": "all-major-dependencies",
+      "matchPackageNames": ["*"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false
     }
   ]
 }
