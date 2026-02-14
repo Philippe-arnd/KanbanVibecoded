@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: 🔎 Dependency Review
         uses: actions/dependency-review-action@v4
@@ -22,7 +22,7 @@ jobs:
           fail-on-severity: high
           vulnerability-check: true
           license-check: true
-          allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD
+          allow-licenses: MIT, MIT-0, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD
           # LightningCSS (MPL-2.0) is a transitive build-only dependency of @tailwindcss/vite.
           # Its copyleft clause applies solely to modifications of LightningCSS itself,
           # not to projects that use it as a build tool.
