@@ -279,4 +279,12 @@ jobs:
             | 🧪 Vitest Tests | ${{ needs.vitest-tests.result == 'success' && '✅ Passed' || needs.vitest-tests.result == 'failure' && '❌ Failed' || '⏭️ Skipped' }} |
             | 🔒 RLS Tests | ${{ needs.rls-tests.result == 'success' && '✅ Passed' || needs.rls-tests.result == 'failure' && '❌ Failed' || '⏭️ Skipped' }} |
 
-            ${{ needs.vitest-tests.outputs.coverage_available == 'true' && format('### 📊 Coverage\n\n| Metric | Coverage | Status |\n|--------|----------|--------|\n| Lines | {0}% | {4} |\n| Statements | {1}% | {5} |\n| Functions | {2}% | {6} |\n| Branches | {3}% | {7} |\n\n📥 [Download full coverage report]({8}/{9}/actions/runs/{10})', needs.vitest-tests.outputs.lines, needs.vitest-tests.outputs.statements, needs.vitest-tests.outputs.functions, needs.vitest-tests.outputs.branches, needs.vitest-tests.outputs.lines >= 80 && '✅' || '❌', needs.vitest-tests.outputs.statements >= 80 && '✅' || '❌', needs.vitest-tests.outputs.functions >= 80 && '✅' || '❌', needs.vitest-tests.outputs.branches >= 80 && '✅' || '❌', github.server_url, github.repository, github.run_id) || '_Coverage data not available._' }}
+            ### 📊 Coverage
+            ${{ needs.vitest-tests.outputs.coverage_available == 'true' && '| Metric | Coverage | Status |' || '_Coverage data not available._' }}
+            ${{ needs.vitest-tests.outputs.coverage_available == 'true' && '|--------|----------|--------|' || '' }}
+            ${{ needs.vitest-tests.outputs.coverage_available == 'true' && format('| Lines | {0}% | {1} |', needs.vitest-tests.outputs.lines, needs.vitest-tests.outputs.lines >= 80 && '✅' || '❌') || '' }}
+            ${{ needs.vitest-tests.outputs.coverage_available == 'true' && format('| Statements | {0}% | {1} |', needs.vitest-tests.outputs.statements, needs.vitest-tests.outputs.statements >= 80 && '✅' || '❌') || '' }}
+            ${{ needs.vitest-tests.outputs.coverage_available == 'true' && format('| Functions | {0}% | {1} |', needs.vitest-tests.outputs.functions, needs.vitest-tests.outputs.functions >= 80 && '✅' || '❌') || '' }}
+            ${{ needs.vitest-tests.outputs.coverage_available == 'true' && format('| Branches | {0}% | {1} |', needs.vitest-tests.outputs.branches, needs.vitest-tests.outputs.branches >= 80 && '✅' || '❌') || '' }}
+
+            ${{ needs.vitest-tests.outputs.coverage_available == 'true' && format('📥 [Download full coverage report]({0}/{1}/actions/runs/{2})', github.server_url, github.repository, github.run_id) || '' }}
