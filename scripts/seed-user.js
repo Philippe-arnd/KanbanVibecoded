@@ -1,10 +1,29 @@
-import { auth } from '../server/auth.js'
-import { db } from '../server/db/index.js'
+import { betterAuth } from 'better-auth'
+import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { adminDb } from '../server/db/index.js'
 import { user } from '../server/db/schema.js'
 import { eq } from 'drizzle-orm'
 import dotenv from 'dotenv'
 
 dotenv.config()
+
+// Use adminDb (superuser) so the seed can run before app_user table grants are set up.
+// This avoids "permission denied for table user" when app_user lacks table-level access.
+const seedAuth = betterAuth({
+  secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+  database: drizzleAdapter(adminDb, {
+    provider: 'pg',
+  }),
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: false,
+  },
+  emailVerification: {
+    sendOnSignUp: false,
+    sendVerificationEmail: async () => {},
+  },
+})
 
 const seed = async () => {
   const email = process.env.TEST_USER_EMAIL || 'test@philapps.com'
@@ -14,9 +33,8 @@ const seed = async () => {
   console.log(`Seeding user: ${email}`)
 
   try {
-    // We use the internal API to create the user
-    // This will handle hashing correctly
-    const result = await auth.api.signUpEmail({
+    // We use the internal API to create the user — handles password hashing correctly
+    const result = await seedAuth.api.signUpEmail({
       body: {
         email,
         password,
@@ -37,7 +55,7 @@ const seed = async () => {
   }
 
   // Always ensure the email is verified in the database
-  await db.update(user).set({ emailVerified: true }).where(eq(user.email, email))
+  await adminDb.update(user).set({ emailVerified: true }).where(eq(user.email, email))
 
   console.log('Email verification updated successfully.')
   process.exit(0)
