@@ -1,0 +1,121 @@
+rules:
+  - id: weak-hash-md5
+    patterns:
+      - pattern: crypto.createHash('md5')
+    message: MD5 is a weak hash algorithm. Use SHA-256 or stronger.
+    languages: [javascript]
+    severity: WARNING
+    metadata:
+      cwe: CWE-327
+      category: security
+
+  - id: weak-hash-sha1
+    patterns:
+      - pattern: crypto.createHash('sha1')
+    message: SHA-1 is a weak hash algorithm. Use SHA-256 or stronger.
+    languages: [javascript]
+    severity: WARNING
+    metadata:
+      cwe: CWE-327
+      category: security
+
+  - id: hardcoded-secret-assignment
+    patterns:
+      - pattern: |
+          $VAR = "..."
+      - metavariable-regex:
+          metavariable: $VAR
+          regex: (?i).*(password|secret|api_key|apikey|token|auth_key|private_key).*
+    message: Possible hardcoded secret in variable '$VAR'. Use environment variables instead.
+    languages: [javascript]
+    severity: ERROR
+    metadata:
+      cwe: CWE-798
+      category: security
+
+  - id: insecure-cookie-secure-false
+    patterns:
+      - pattern: |
+          {..., secure: false, ...}
+    message: Cookie has 'secure' set to false. This allows transmission over HTTP.
+    languages: [javascript]
+    severity: WARNING
+    metadata:
+      cwe: CWE-614
+      category: security
+
+  - id: insecure-cookie-httponly-false
+    patterns:
+      - pattern: |
+          {..., httpOnly: false, ...}
+    message: Cookie has 'httpOnly' set to false. This exposes it to client-side scripts.
+    languages: [javascript]
+    severity: WARNING
+    metadata:
+      cwe: CWE-1004
+      category: security
+
+  - id: sql-injection-string-concat
+    patterns:
+      - pattern: |
+          $DB.query(`...${...}...`)
+    message: Possible SQL injection via template literal in db.query(). Use parameterized queries.
+    languages: [javascript]
+    severity: ERROR
+    metadata:
+      cwe: CWE-89
+      category: security
+
+  - id: xss-innerhtml
+    patterns:
+      - pattern: |
+          $EL.innerHTML = $VAL
+    message: Direct assignment to innerHTML can lead to XSS. Use textContent or sanitize input.
+    languages: [javascript]
+    severity: WARNING
+    metadata:
+      cwe: CWE-79
+      category: security
+
+  - id: xss-dangerously-set-inner-html
+    patterns:
+      - pattern: |
+          dangerouslySetInnerHTML={{__html: $VAL}}
+    message: dangerouslySetInnerHTML can expose the app to XSS attacks. Ensure input is sanitized.
+    languages: [javascript]
+    severity: WARNING
+    metadata:
+      cwe: CWE-79
+      category: security
+
+  - id: insecure-math-random-security
+    patterns:
+      - pattern: |
+          function $FUNC(...) {
+            ...
+            Math.random()
+            ...
+          }
+      - metavariable-regex:
+          metavariable: $FUNC
+          regex: (?i).*(token|secret|key|password|nonce|random|generate|create).*
+    message: Math.random() is not cryptographically secure. Use crypto.randomBytes() or crypto.getRandomValues() in security-sensitive functions.
+    languages: [javascript]
+    severity: ERROR
+    metadata:
+      cwe: CWE-338
+      category: security
+
+  - id: sensitive-data-localstorage-password
+    patterns:
+      - pattern: |
+          localStorage.setItem($KEY, ...)
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: (?i).*(password|secret|token|auth|session|credential|api_key).*
+    message: Storing sensitive data in localStorage is insecure. Use session storage or secure cookies.
+    languages: [javascript]
+    severity: ERROR
+    metadata:
+      cwe: CWE-312
+      category: security

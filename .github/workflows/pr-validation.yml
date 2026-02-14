@@ -1,0 +1,184 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  quick-checks:
+    name: Quick Checks
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_ENCRYPTION_KEY: ci-dummy-key
+
+  db-and-api-tests:
+    name: Database & API Tests
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: kanban_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Wait for PostgreSQL
+        run: until pg_isready -h localhost -p 5432 -U postgres; do sleep 1; done
+
+      - name: Create restricted app_user
+        run: |
+          psql -h localhost -U postgres -d kanban_test -c "CREATE USER app_user WITH PASSWORD 'app_password';"
+          psql -h localhost -U postgres -d kanban_test -c "GRANT CONNECT ON DATABASE kanban_test TO app_user;"
+        env:
+          PGPASSWORD: postgres
+
+      - name: Run database migrations
+        run: npx drizzle-kit push --config=server/drizzle.config.js --force
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanban_test
+          ADMIN_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanban_test
+
+      - name: Grant app_user table permissions
+        run: |
+          psql -h localhost -U postgres -d kanban_test -c \
+            "GRANT USAGE ON SCHEMA public TO app_user; \
+             GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO app_user; \
+             GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public TO app_user;"
+        env:
+          PGPASSWORD: postgres
+
+      - name: Apply RLS policies
+        run: node server/db/apply-rls.js
+        env:
+          ADMIN_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanban_test
+
+      - name: Run Vitest tests with coverage
+        id: vitest
+        run: |
+          set +e
+          npm run test:coverage 2>&1 | tee /tmp/vitest-output.txt
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          set -e
+        env:
+          DATABASE_URL: postgresql://app_user:app_password@localhost:5432/kanban_test
+          ADMIN_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanban_test
+          BETTER_AUTH_SECRET: ci-secret-for-better-auth-minimum-32-chars
+          BETTER_AUTH_URL: http://localhost:3000
+
+      - name: Run RLS tests
+        id: rls-tests
+        run: |
+          set +e
+          node --test server/tests/test-rls.js 2>&1 | tee /tmp/rls-output.txt
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          set -e
+        env:
+          DATABASE_URL: postgresql://app_user:app_password@localhost:5432/kanban_test
+          ADMIN_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kanban_test
+
+      - name: Parse coverage report
+        id: coverage
+        if: always()
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            LINES=$(node -e "const s=require('./coverage/coverage-summary.json').total;console.log(s.lines.pct)")
+            STMTS=$(node -e "const s=require('./coverage/coverage-summary.json').total;console.log(s.statements.pct)")
+            FUNCS=$(node -e "const s=require('./coverage/coverage-summary.json').total;console.log(s.functions.pct)")
+            BRANCH=$(node -e "const s=require('./coverage/coverage-summary.json').total;console.log(s.branches.pct)")
+            echo "lines=$LINES" >> $GITHUB_OUTPUT
+            echo "statements=$STMTS" >> $GITHUB_OUTPUT
+            echo "functions=$FUNCS" >> $GITHUB_OUTPUT
+            echo "branches=$BRANCH" >> $GITHUB_OUTPUT
+            echo "available=true" >> $GITHUB_OUTPUT
+          else
+            echo "available=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Find existing PR comment
+        id: find-comment
+        if: always()
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- ci-test-results -->'
+
+      - name: Post PR comment with test results
+        if: always()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- ci-test-results -->
+            ## CI Test Results
+
+            | Check | Status |
+            |-------|--------|
+            | Vitest Tests | ${{ steps.vitest.outputs.exit_code == '0' && '✅ Passed' || '❌ Failed' }} |
+            | RLS Tests | ${{ steps.rls-tests.outputs.exit_code == '0' && '✅ Passed' || '❌ Failed' }} |
+
+            ${{ steps.coverage.outputs.available == 'true' && format('### Coverage\n\n| Metric | Coverage |\n|--------|----------|\n| Lines | {0}% |\n| Statements | {1}% |\n| Functions | {2}% |\n| Branches | {3}% |', steps.coverage.outputs.lines, steps.coverage.outputs.statements, steps.coverage.outputs.functions, steps.coverage.outputs.branches) || '_Coverage data not available._' }}
+
+      - name: Fail if tests failed
+        if: always()
+        run: |
+          VITEST_EXIT="${{ steps.vitest.outputs.exit_code }}"
+          RLS_EXIT="${{ steps.rls-tests.outputs.exit_code }}"
+          if [ "${VITEST_EXIT}" != "0" ] || [ "${RLS_EXIT}" != "0" ]; then
+            echo "One or more test steps failed (vitest: ${VITEST_EXIT}, rls: ${RLS_EXIT})"
+            exit 1
+          fi
