@@ -14,11 +14,10 @@
       "platformAutomerge": true
     },
     {
-      "groupName": "all major dependencies",
-      "groupSlug": "all-major-dependencies",
       "matchPackageNames": ["*"],
       "matchUpdateTypes": ["major"],
-      "automerge": false
+      "automerge": false,
+      "separateMajorMinor": true
     }
   ]
 }
