@@ -84,6 +84,22 @@ jobs:
               echo "✅ Required check '$CHECK': PASSED"
             fi
           done
+          # Docker Validation is path-filtered (only runs when Docker files change).
+          # It is not a required check, but if it ran and failed, block the merge.
+          DOCKER_CHECK="🐳 Build & Validate Docker Image"
+          DOCKER_STATE=$(echo "$CHECK_DATA" | node -e "
+            const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+            const c=d.find(x=>x.name==='$DOCKER_CHECK');
+            console.log(c?c.state:'not_run');
+          ")
+          if [ "$DOCKER_STATE" = "not_run" ]; then
+            echo "ℹ️ Docker validation did not run (no Docker file changes) — skipping"
+          elif [ "$DOCKER_STATE" != "SUCCESS" ]; then
+            echo "Docker validation ran but did not pass (state: $DOCKER_STATE)"
+            ALL_PASSED=false
+          else
+            echo "✅ Docker validation: PASSED"
+          fi
           echo "all_passed=$ALL_PASSED" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
