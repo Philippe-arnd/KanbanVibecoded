@@ -1,0 +1,7 @@
+node_modules/
+dist/
+client/dist/
+server/tests/
+client/src/**/*.test.*
+server/drizzle/
+coverage/

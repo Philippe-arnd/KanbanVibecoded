@@ -18,7 +18,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "preview": "vite preview client",
-    "test": "NODE_ENV=test vitest run"
+    "test": "NODE_ENV=test vitest run --config server/vitest.config.ts",
+    "test:coverage": "NODE_ENV=test vitest run --config server/vitest.config.ts --coverage"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
@@ -46,6 +47,7 @@
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "autoprefixer": "^10.4.18",
     "concurrently": "^9.2.1",
     "eslint": "^9.39.2",

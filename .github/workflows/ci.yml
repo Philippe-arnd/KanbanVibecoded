@@ -11,14 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: 'npm'
-          # On indique où se trouve le package-lock.json pour le cache
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
@@ -27,6 +26,4 @@ jobs:
       - name: Check Build
         run: npm run build
         env:
-          # Ces secrets doivent être ajoutés dans Settings > Secrets > Actions sur GitHub
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_ENCRYPTION_KEY: ci-dummy-key

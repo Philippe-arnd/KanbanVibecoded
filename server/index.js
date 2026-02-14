@@ -4,9 +4,9 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { toNodeHandler } from 'better-auth/node'
 import { auth } from './auth.js'
-import { db, withRLS } from './db/index.js'
+import { withRLS } from './db/index.js'
 import { tasks } from './db/schema.js'
-import { eq, and } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

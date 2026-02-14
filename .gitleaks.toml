@@ -1,0 +1,57 @@
+[allowlist]
+description = "Global allowlist for CI, tests, and documentation"
+paths = [
+  '''\.md$''',
+  '''CHANGELOG\.md''',
+  '''\.test\.\w+$''',
+  '''\.spec\.\w+$''',
+  '''server/tests/''',
+  '''\.env\.example''',
+  '''\.github/''',
+]
+regexes = [
+  '''(?i)(test|placeholder|example|dummy|ci)[-_]?(password|secret|key|token)''',
+  '''localhost''',
+  '''postgresql://postgres:postgres@localhost''',
+  '''postgresql://app_user:app_password@localhost''',
+  '''\$\{\{[^}]+\}\}''',
+]
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key"
+regex = '''(?i)(api[_-]?key|apikey)\s*[:=]\s*['"]?[a-zA-Z0-9_\-]{20,}['"]?'''
+severity = "WARNING"
+[rules.allowlist]
+paths = ['''.github/''']
+regexes = [
+  '''(?i)(test|placeholder|example|dummy|ci)''',
+  '''\$\{\{[^}]+\}\}''',
+]
+
+[[rules]]
+id = "jwt-better-auth-secret"
+description = "JWT or Better Auth secret"
+regex = '''(?i)(better_auth_secret|jwt[_-]?secret|auth[_-]?secret)\s*[:=]\s*['"]?.{8,}['"]?'''
+severity = "WARNING"
+[rules.allowlist]
+paths = ['''.github/''']
+regexes = [
+  '''(?i)(test|placeholder|example|dummy|ci)''',
+  '''\$\{\{[^}]+\}\}''',
+]
+
+[[rules]]
+id = "database-url-with-credentials"
+description = "Database URL with embedded credentials"
+regex = '''(postgresql|postgres|mysql|mongodb)://[^:]+:[^@]+@[^/\s]+\.[^/\s]+'''
+severity = "WARNING"
+[rules.allowlist]
+paths = ['''.github/''']
+regexes = [
+  '''(?i)(test|placeholder|example|dummy|ci)''',
+  '''\$\{\{[^}]+\}\}''',
+  '''localhost''',
+  '''@postgres:''',
+  '''@test-postgres:''',
+]

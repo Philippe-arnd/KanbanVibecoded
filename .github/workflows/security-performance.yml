@@ -1,0 +1,153 @@
+name: Security & Performance
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: security-performance-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  secret-detection:
+    name: Secret Detection
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  security-scan:
+    name: Security Scan
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        id: semgrep
+        uses: semgrep/semgrep-action@v1
+        continue-on-error: true
+        with:
+          config: >-
+            p/security-audit
+            p/javascript
+            p/react
+            p/nodejs
+            .semgrep.yml
+          generateSarif: '1'
+
+      - name: Upload SARIF results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+        continue-on-error: true
+
+      - name: Fail if Semgrep found critical issues
+        if: steps.semgrep.outcome == 'failure'
+        run: |
+          echo "Semgrep security scan failed with critical findings."
+          exit 1
+
+  bundle-size:
+    name: Bundle Size
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_ENCRYPTION_KEY: ci-dummy-key
+
+      - name: Measure bundle size
+        id: bundle
+        run: |
+          JS_LIMIT=600000
+          CSS_LIMIT=80000
+          JS_SIZE=$(find client/dist/assets -name '*.js' -exec wc -c {} + 2>/dev/null | tail -1 | awk '{print $1}' || echo 0)
+          CSS_SIZE=$(find client/dist/assets -name '*.css' -exec wc -c {} + 2>/dev/null | tail -1 | awk '{print $1}' || echo 0)
+          echo "js_size=$JS_SIZE" >> $GITHUB_OUTPUT
+          echo "css_size=$CSS_SIZE" >> $GITHUB_OUTPUT
+          JS_WARN=false
+          CSS_WARN=false
+          if [ "$JS_SIZE" -gt "$JS_LIMIT" ]; then
+            echo "WARNING: JS bundle size ${JS_SIZE} bytes exceeds limit of ${JS_LIMIT} bytes"
+            JS_WARN=true
+          fi
+          if [ "$CSS_SIZE" -gt "$CSS_LIMIT" ]; then
+            echo "WARNING: CSS bundle size ${CSS_SIZE} bytes exceeds limit of ${CSS_LIMIT} bytes"
+            CSS_WARN=true
+          fi
+          echo "js_warn=$JS_WARN" >> $GITHUB_OUTPUT
+          echo "css_warn=$CSS_WARN" >> $GITHUB_OUTPUT
+
+  generate-report:
+    name: Generate Security Report
+    needs: [secret-detection, security-scan, bundle-size]
+    if: always() && github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Find existing PR comment
+        id: find-comment
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- ci-security-report -->'
+
+      - name: Post security report comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- ci-security-report -->
+            ## Security & Performance Report
+
+            | Check | Status |
+            |-------|--------|
+            | Secret Detection | ${{ needs.secret-detection.result == 'success' && '✅ Passed' || needs.secret-detection.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |
+            | Security Scan | ${{ needs.security-scan.result == 'success' && '✅ Passed' || needs.security-scan.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |
+            | Bundle Size (JS) | ${{ needs.bundle-size.result == 'success' && (needs.bundle-size.outputs.js_warn == 'true' && format('⚠️ {0} bytes (over limit)', needs.bundle-size.outputs.js_size) || format('✅ {0} bytes', needs.bundle-size.outputs.js_size)) || '❓ N/A' }} |
+            | Bundle Size (CSS) | ${{ needs.bundle-size.result == 'success' && (needs.bundle-size.outputs.css_warn == 'true' && format('⚠️ {0} bytes (over limit)', needs.bundle-size.outputs.css_size) || format('✅ {0} bytes', needs.bundle-size.outputs.css_size)) || '❓ N/A' }} |
+
+      - name: Fail if blocking checks failed
+        if: needs.secret-detection.result == 'failure' || needs.security-scan.result == 'failure'
+        run: |
+          echo "One or more blocking security checks failed."
+          echo "Secret Detection: ${{ needs.secret-detection.result }}"
+          echo "Security Scan: ${{ needs.security-scan.result }}"
+          exit 1
