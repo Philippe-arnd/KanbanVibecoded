@@ -1,6 +1,7 @@
 # CI/CD Workflow Architecture
 
 This document describes the complete GitHub Actions CI/CD system for the kanban-app project.
+<!-- auto-merge validation: 2026-02-14 -->
 
 ---
 
