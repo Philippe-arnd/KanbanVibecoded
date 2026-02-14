@@ -10,13 +10,13 @@ permissions:
 
 jobs:
   dependency-review:
-    name: Review Dependencies for Vulnerabilities
+    name: 🔎 Review Dependencies for Vulnerabilities
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Dependency Review
+      - name: 🔎 Dependency Review
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: high

@@ -16,11 +16,11 @@ permissions:
 
 jobs:
   auto-merge:
-    name: Auto Merge on All Checks Passed
+    name: 🤖 Auto Merge on All Checks Passed
     if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
-      - name: Find associated PR
+      - name: 🔍 Find associated PR
         id: find-pr
         run: |
           BRANCH="${{ github.event.workflow_run.head_branch }}"
@@ -54,17 +54,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check all required CI checks passed
+      - name: ✅ Check all required CI checks passed
         id: check-status
         if: steps.find-pr.outputs.pr_number != ''
         run: |
           PR_NUMBER="${{ steps.find-pr.outputs.pr_number }}"
           REQUIRED_CHECKS=(
-            "Quick Checks"
-            "Database & API Tests"
-            "Secret Detection"
-            "Security Scan"
-            "Review Dependencies for Vulnerabilities"
+            "✅ Quick Checks"
+            "🧪 Vitest Tests"
+            "🔒 RLS Tests"
+            "🔑 Secret Detection"
+            "🛡️ Security Scan"
+            "🔎 Review Dependencies for Vulnerabilities"
           )
           CHECK_DATA=$(gh pr checks "$PR_NUMBER" \
             --repo "${{ github.repository }}" \
@@ -80,14 +81,14 @@ jobs:
               echo "Required check '$CHECK' is not passing (state: $STATE)"
               ALL_PASSED=false
             else
-              echo "Required check '$CHECK': PASSED"
+              echo "✅ Required check '$CHECK': PASSED"
             fi
           done
           echo "all_passed=$ALL_PASSED" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Merge PR
+      - name: 🔀 Merge PR
         id: merge
         if: steps.find-pr.outputs.pr_number != '' && steps.check-status.outputs.all_passed == 'true'
         run: |
@@ -100,12 +101,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Post auto-merge confirmation comment
+      - name: 💬 Post auto-merge confirmation comment
         if: steps.merge.outputs.merged == 'true'
         run: |
           PR_NUMBER="${{ steps.find-pr.outputs.pr_number }}"
           gh pr comment "$PR_NUMBER" \
             --repo "${{ github.repository }}" \
-            --body "✅ All required CI checks passed. This PR has been queued for auto-merge (squash)."
+            --body "🤖 All required CI checks passed. This PR has been queued for auto-merge (squash)."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

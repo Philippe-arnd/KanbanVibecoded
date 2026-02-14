@@ -19,8 +19,10 @@ npm run format       # Prettier
 npm run db:push      # Apply schema changes via Drizzle (use this, not migrations)
 
 # Testing
-npm test             # Run all Vitest tests
-npx vitest run server/tests/api.test.js  # Run a single test file
+npm test                                          # Run all Vitest tests
+npm run test:coverage                             # Run tests with coverage report
+npx vitest run server/tests/api.test.js           # Run a single test file
+node --test server/tests/test-rls.js              # Run RLS tests (node:test, NOT vitest)
 ```
 
 **Local Docker dev** (recommended for full-stack testing):
@@ -87,6 +89,28 @@ Tasks are encrypted client-side using `VITE_ENCRYPTION_KEY` (`client/src/utils/c
 - **Prettier**: no semicolons, single quotes, 2-space tabs, trailing commas (es5), 100-char line width.
 - **UI style**: Neo-brutalism — thick borders, hard shadows. Preserve this aesthetic.
 - Always use `db:push` for schema changes during development, not manual migrations.
+
+## CI/CD
+
+6 GitHub Actions workflows are active on `main`. See `.github/workflows/workflow.md` for full architecture docs.
+
+**Workflows:**
+- `ci.yml` — Build check on every push to main/dev
+- `pr-validation.yml` — Lint/build + Vitest + RLS tests run in parallel; report job posts PR comment with results + downloadable coverage artifact
+- `security-performance.yml` — Gitleaks, Semgrep, bundle size check
+- `dependency-review.yml` — CVE and license check via `actions/dependency-review-action@v4`
+- `docker-validation.yml` — Docker build + health check (path-filtered: only runs when Docker files change)
+- `auto-merge.yml` — Squash-merges when all 6 required checks pass
+
+**Key gotchas:**
+- `BETTER_AUTH_SECRET` must be ≥32 chars — shorter values crash the auth module at import time
+- `test-rls.js` uses `node:test` — run with `node --test`, never vitest
+- Gitleaks uses RE2: no negative lookaheads (`(?!...)`) — use path allowlists instead
+- `drizzle-kit push` in CI needs `--force` flag (non-interactive)
+- `workflow_run` trigger only fires from workflows on the default branch (bootstrap limitation)
+- Docker: use `-p 3000` (no fixed host port), get dynamic port with `docker port <container> 3000 | cut -d: -f2`
+
+**Required checks for auto-merge (6 total):** "✅ Quick Checks", "🧪 Vitest Tests", "🔒 RLS Tests", "🔑 Secret Detection", "🛡️ Security Scan", "🔎 Review Dependencies for Vulnerabilities"
 
 ## Commit Message Format
 
