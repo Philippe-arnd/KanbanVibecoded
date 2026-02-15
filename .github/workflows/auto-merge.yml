@@ -16,12 +16,12 @@ jobs:
     uses: Philippe-arnd/reusable-workflow-vibecoded/.github/workflows/reusable-auto-merge.yml@main
     with:
       required-checks: |
-        ✅ Quick Checks
-        🧪 Vitest Tests
-        🔒 RLS Tests
-        🔑 Secret Detection
-        🛡️ Security Scan
-        🔎 Review Dependencies for Vulnerabilities
+        PR Validation / ✅ Quick Checks
+        PR Validation / 🧪 Vitest Tests
+        PR Validation / 🔒 RLS Tests
+        Security & Performance / 🔑 Secret Detection
+        Security & Performance / 🛡️ Security Scan
+        Dependency Review / 🔎 Review Dependencies for Vulnerabilities
       merge-method: 'squash'
       base-branch: 'main'
       block-label: 'major-update'
