@@ -158,23 +158,31 @@ The reusable checks all 6 required checks via `gh pr checks`, skips draft/confli
 
 ## Required Checks for Auto-Merge
 
-All **6** check names must be `SUCCESS`:
+All **6** check names must be `SUCCESS`. Because these come from reusable workflows, GitHub reports them as `"Caller Workflow / Job Name"`:
 
-| Check Name | Source Workflow | Reusable Job |
-|------------|----------------|--------------|
-| ✅ Quick Checks | PR Validation | `quick-checks` |
-| 🧪 Vitest Tests | PR Validation | `vitest-tests` |
-| 🔒 RLS Tests | PR Validation | `rls-tests` |
-| 🔑 Secret Detection | Security & Performance | `secret-detection` |
-| 🛡️ Security Scan | Security & Performance | `security-scan` |
-| 🔎 Review Dependencies for Vulnerabilities | Dependency Review | `dependency-review` |
+| Check Name (as seen in GitHub UI) | Source Workflow | Reusable Job |
+|-----------------------------------|----------------|--------------|
+| `PR Validation / ✅ Quick Checks` | PR Validation | `quick-checks` |
+| `PR Validation / 🧪 Vitest Tests` | PR Validation | `vitest-tests` |
+| `PR Validation / 🔒 RLS Tests` | PR Validation | `rls-tests` |
+| `Security & Performance / 🔑 Secret Detection` | Security & Performance | `secret-detection` |
+| `Security & Performance / 🛡️ Security Scan` | Security & Performance | `security-scan` |
+| `Dependency Review / 🔎 Review Dependencies for Vulnerabilities` | Dependency Review | `dependency-review` |
 
-Docker Validation (`🐳 Build & Validate Docker Image`) is intentionally excluded — it only runs on Docker-related file changes and would block unrelated PRs. If it runs and fails the branch protection prevents merging anyway.
+### Docker Validation and auto-merge
 
-> **Important:** These check names must match the `name:` fields in the reusable workflow jobs exactly. If the reusable is updated and job names change, update `auto-merge.yml` required-checks AND the GitHub branch protection rules via:
+Docker Validation (`Docker Validation / 🐳 Build & Validate Docker Image`) is **not** in the required checks list because it is path-filtered — it only runs when `Dockerfile`, `docker-compose*.yml`, or `.dockerignore` change. Adding it as a required check would block all unrelated PRs where it never runs.
+
+**Current behaviour:** if Docker Validation runs and fails, it does **not** block auto-merge. The reusable `reusable-auto-merge.yml` only evaluates the `required-checks` list, and Docker is absent from it. The old inline `auto-merge.yml` had explicit logic to block on Docker failure; that logic was not carried over to the reusable.
+
+**Mitigation options** if stricter enforcement is needed:
+- Add `Docker Validation / 🐳 Build & Validate Docker Image` to the `required-checks` input in `auto-merge.yml` and mark it as optional in branch protection (merges will only be blocked when the check ran AND failed, not when it was skipped) — but this is not natively supported by GitHub branch protection
+- Add the optional-block logic upstream to `reusable-auto-merge.yml` via an `optional-block-checks` input
+
+> **When renaming jobs in the reusable:** update `auto-merge.yml` `required-checks` input AND the branch protection rules via:
 > ```bash
-> gh api repos/{owner}/kanban-app/branches/main/protection/required_status_checks/contexts \
->   --method PUT --input - <<< '["✅ Quick Checks", ...]'
+> gh api repos/Philippe-arnd/KanbanVibecoded/branches/main/protection/required_status_checks/contexts \
+>   --method PUT --input - <<< '["PR Validation / ✅ Quick Checks", ...]'
 > ```
 
 ---
