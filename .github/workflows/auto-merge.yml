@@ -9,130 +9,23 @@ on:
       - 'Docker Validation'
     types: [completed]
 
-permissions:
-  contents: write
-  pull-requests: write
-  checks: read
-
 jobs:
   auto-merge:
-    name: 🤖 Auto Merge on All Checks Passed
+    name: Auto Merge
     if: github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🔍 Find associated PR
-        id: find-pr
-        run: |
-          BRANCH="${{ github.event.workflow_run.head_branch }}"
-          PR_DATA=$(gh pr list \
-            --head "$BRANCH" \
-            --base main \
-            --state open \
-            --json number,isDraft,mergeable,labels \
-            --repo "${{ github.repository }}" \
-            2>/dev/null || echo "[]")
-          PR_COUNT=$(echo "$PR_DATA" | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));console.log(d.length)")
-          if [ "$PR_COUNT" -eq 0 ]; then
-            echo "No open PR found for branch $BRANCH"
-            echo "pr_number=" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          PR_NUMBER=$(echo "$PR_DATA" | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));console.log(d[0].number)")
-          IS_DRAFT=$(echo "$PR_DATA" | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));console.log(d[0].isDraft)")
-          MERGEABLE=$(echo "$PR_DATA" | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));console.log(d[0].mergeable)")
-          if [ "$IS_DRAFT" = "true" ]; then
-            echo "PR #$PR_NUMBER is a draft — skipping auto-merge"
-            echo "pr_number=" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          if [ "$MERGEABLE" = "CONFLICTING" ]; then
-            echo "PR #$PR_NUMBER has conflicts — skipping auto-merge"
-            echo "pr_number=" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          HAS_MAJOR=$(echo "$PR_DATA" | node -e "
-            const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
-            const labels=d[0].labels||[];
-            console.log(labels.some(l=>l.name==='major-update')?'true':'false');
-          ")
-          if [ "$HAS_MAJOR" = "true" ]; then
-            echo "PR #$PR_NUMBER has 'major-update' label — requires manual review, skipping auto-merge"
-            echo "pr_number=" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: ✅ Check all required CI checks passed
-        id: check-status
-        if: steps.find-pr.outputs.pr_number != ''
-        run: |
-          PR_NUMBER="${{ steps.find-pr.outputs.pr_number }}"
-          REQUIRED_CHECKS=(
-            "✅ Quick Checks"
-            "🧪 Vitest Tests"
-            "🔒 RLS Tests"
-            "🔑 Secret Detection"
-            "🛡️ Security Scan"
-            "🔎 Review Dependencies for Vulnerabilities"
-          )
-          CHECK_DATA=$(gh pr checks "$PR_NUMBER" \
-            --repo "${{ github.repository }}" \
-            --json name,state 2>/dev/null || echo "[]")
-          ALL_PASSED=true
-          for CHECK in "${REQUIRED_CHECKS[@]}"; do
-            STATE=$(echo "$CHECK_DATA" | node -e "
-              const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
-              const c=d.find(x=>x.name==='$CHECK');
-              console.log(c?c.state:'missing');
-            ")
-            if [ "$STATE" != "SUCCESS" ]; then
-              echo "Required check '$CHECK' is not passing (state: $STATE)"
-              ALL_PASSED=false
-            else
-              echo "✅ Required check '$CHECK': PASSED"
-            fi
-          done
-          # Docker Validation is path-filtered (only runs when Docker files change).
-          # It is not a required check, but if it ran and failed, block the merge.
-          DOCKER_CHECK="🐳 Build & Validate Docker Image"
-          DOCKER_STATE=$(echo "$CHECK_DATA" | node -e "
-            const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
-            const c=d.find(x=>x.name==='$DOCKER_CHECK');
-            console.log(c?c.state:'not_run');
-          ")
-          if [ "$DOCKER_STATE" = "not_run" ]; then
-            echo "ℹ️ Docker validation did not run (no Docker file changes) — skipping"
-          elif [ "$DOCKER_STATE" != "SUCCESS" ]; then
-            echo "Docker validation ran but did not pass (state: $DOCKER_STATE)"
-            ALL_PASSED=false
-          else
-            echo "✅ Docker validation: PASSED"
-          fi
-          echo "all_passed=$ALL_PASSED" >> $GITHUB_OUTPUT
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 🔀 Merge PR
-        id: merge
-        if: steps.find-pr.outputs.pr_number != '' && steps.check-status.outputs.all_passed == 'true'
-        run: |
-          PR_NUMBER="${{ steps.find-pr.outputs.pr_number }}"
-          gh pr merge "$PR_NUMBER" \
-            --repo "${{ github.repository }}" \
-            --squash \
-            --auto
-          echo "merged=true" >> $GITHUB_OUTPUT
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 💬 Post auto-merge confirmation comment
-        if: steps.merge.outputs.merged == 'true'
-        run: |
-          PR_NUMBER="${{ steps.find-pr.outputs.pr_number }}"
-          gh pr comment "$PR_NUMBER" \
-            --repo "${{ github.repository }}" \
-            --body "🤖 All required CI checks passed. This PR has been queued for auto-merge (squash)."
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    uses: Philippe-arnd/reusable-workflow-vibecoded/.github/workflows/reusable-auto-merge.yml@main
+    with:
+      required-checks: |
+        ✅ Quick Checks
+        🧪 Vitest Tests
+        🔒 RLS Tests
+        🔑 Secret Detection
+        🛡️ Security Scan
+        🔎 Review Dependencies for Vulnerabilities
+      merge-method: 'squash'
+      base-branch: 'main'
+      block-label: 'major-update'
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: read
