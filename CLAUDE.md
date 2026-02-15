@@ -94,13 +94,13 @@ Tasks are encrypted client-side using `VITE_ENCRYPTION_KEY` (`client/src/utils/c
 
 6 GitHub Actions workflows are active on `main`. See `.github/workflows/workflow.md` for full architecture docs.
 
-**Workflows:**
-- `ci.yml` — Build check on every push to main/dev
-- `pr-validation.yml` — Lint/build + Vitest + RLS tests run in parallel; report job posts PR comment with results + downloadable coverage artifact
-- `security-performance.yml` — Gitleaks, Semgrep, bundle size check
-- `dependency-review.yml` — CVE and license check via `actions/dependency-review-action@v4`
-- `docker-validation.yml` — Docker build + health check (path-filtered: only runs when Docker files change)
-- `auto-merge.yml` — Squash-merges when all 6 required checks pass
+**Workflows:** `ci.yml` runs inline; the other 5 are thin callers delegating to [`Philippe-arnd/reusable-workflow-vibecoded`](https://github.com/Philippe-arnd/reusable-workflow-vibecoded):
+- `ci.yml` — Inline build check on every push to main/dev
+- `pr-validation.yml` — Calls `reusable-pr-validation.yml` (lint/build + Vitest + RLS tests + coverage report)
+- `security-performance.yml` — Calls `reusable-security-performance.yml` (Gitleaks, Semgrep, bundle size)
+- `dependency-review.yml` — Calls `reusable-dependency-review.yml` (CVE and license check)
+- `docker-validation.yml` — Calls `reusable-docker-validation.yml` (Docker build + health, path-filtered)
+- `auto-merge.yml` — Calls `reusable-auto-merge.yml` (squash-merges when all 6 required checks pass)
 
 **Key gotchas:**
 - `BETTER_AUTH_SECRET` must be ≥32 chars — shorter values crash the auth module at import time
@@ -110,9 +110,9 @@ Tasks are encrypted client-side using `VITE_ENCRYPTION_KEY` (`client/src/utils/c
 - `workflow_run` trigger only fires from workflows on the default branch (bootstrap limitation)
 - Docker: use `-p 3000` (no fixed host port), get dynamic port with `docker port <container> 3000 | cut -d: -f2`
 - `format()` in GHA outputs literal `\n` — NOT real newlines. For multi-line markdown in `body: |` blocks, put each row on its own YAML line with a separate `${{ }}` expression
-- When renaming workflow job names, update BOTH `auto-merge.yml` required checks AND GitHub branch protection rules via API (`gh api repos/.../branches/main/protection/required_status_checks/contexts --method PUT`)
+- Reusable workflow jobs appear in GitHub checks as `"Caller Workflow / Job Name"` — update BOTH `auto-merge.yml` required-checks AND branch protection rules when renaming: `gh api repos/.../branches/main/protection/required_status_checks/contexts --method PUT`
 
-**Required checks for auto-merge (6 total):** "✅ Quick Checks", "🧪 Vitest Tests", "🔒 RLS Tests", "🔑 Secret Detection", "🛡️ Security Scan", "🔎 Review Dependencies for Vulnerabilities"
+**Required checks for auto-merge (6 total):** "PR Validation / ✅ Quick Checks", "PR Validation / 🧪 Vitest Tests", "PR Validation / 🔒 RLS Tests", "Security & Performance / 🔑 Secret Detection", "Security & Performance / 🛡️ Security Scan", "Dependency Review / 🔎 Review Dependencies for Vulnerabilities"
 
 ## Commit Message Format
 

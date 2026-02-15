@@ -95,6 +95,19 @@ This version focuses on data security and multi-tenant isolation at the database
 
 ## Deployment (CI/CD)
 
+### GitHub Actions
+
+6 workflows run automatically on every PR and push to `main`. Five of them delegate to shared reusable workflows in [`reusable-workflow-vibecoded`](https://github.com/Philippe-arnd/reusable-workflow-vibecoded):
+
+| Workflow | Trigger | Purpose |
+|---|---|---|
+| CI | Push to main/dev | Build check |
+| PR Validation | PR → main | Lint, Vitest, RLS tests, coverage report |
+| Security & Performance | PR → main | Secret scan, SAST, bundle size |
+| Dependency Review | PR → main | CVE and license compliance |
+| Docker Validation | PR → main (Docker files only) | Docker build + health check |
+| Auto Merge | All checks green | Squash merge |
+
 ### Docker / Coolify (Self-hosted)
 
 1. Use the provided `docker-compose.yml` for self-hosted deployment.
