@@ -24,4 +24,5 @@ jobs:
         BETTER_AUTH_SECRET=ci-secret-for-better-auth-minimum-32-chars
         BETTER_AUTH_URL=http://localhost:3000
     permissions:
+      contents: read
       pull-requests: write
