@@ -99,7 +99,7 @@ Tasks are encrypted client-side using `VITE_ENCRYPTION_KEY` (`client/src/utils/c
 - `pr-validation.yml` — Calls `reusable-pr-validation.yml` (lint/build + Vitest + RLS tests + coverage report)
 - `security-performance.yml` — Calls `reusable-security-performance.yml` (Gitleaks, Semgrep, bundle size)
 - `dependency-review.yml` — Calls `reusable-dependency-review.yml` (CVE and license check)
-- `docker-validation.yml` — Calls `reusable-docker-validation.yml` (Docker build + health, path-filtered)
+- `docker-validation.yml` — Calls `reusable-docker-validation.yml` (Docker build + Trivy CVE scan + SBOM + health check, path-filtered)
 - `auto-merge.yml` — Calls `reusable-auto-merge.yml` (squash-merges when all 6 required checks pass)
 
 **Key gotchas:**
@@ -109,6 +109,7 @@ Tasks are encrypted client-side using `VITE_ENCRYPTION_KEY` (`client/src/utils/c
 - `drizzle-kit push` in CI needs `--force` flag (non-interactive)
 - `workflow_run` trigger only fires from workflows on the default branch (bootstrap limitation)
 - Docker: use `-p 3000` (no fixed host port), get dynamic port with `docker port <container> 3000 | cut -d: -f2`
+- Docker validation runs Trivy (CRITICAL/HIGH CVEs) + SBOM by default — results go to GitHub Security tab as SARIF; `trivy-fail-on-finding: false` so it reports without blocking
 - `format()` in GHA outputs literal `\n` — NOT real newlines. For multi-line markdown in `body: |` blocks, put each row on its own YAML line with a separate `${{ }}` expression
 - Reusable workflow jobs appear in GitHub checks as `"Caller Workflow / Job Name"` — update BOTH `auto-merge.yml` required-checks AND branch protection rules when renaming: `gh api repos/.../branches/main/protection/required_status_checks/contexts --method PUT`
 

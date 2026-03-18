@@ -132,7 +132,17 @@ Key inputs passed to the reusable:
 | `build-args` | `VITE_ENCRYPTION_KEY=ci-dummy-key` |
 | `app-env` | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NODE_ENV=production` |
 
-The reusable builds the image, starts a Postgres container on an isolated network, creates `app_user`, launches the app with a dynamic port, and polls `GET /api/health`.
+The reusable runs a single job (`🐳 Build & Validate Docker Image`) with these steps:
+
+1. **Build** — `docker build` with the provided `build-args`
+2. **Trivy scan** — scans the built image for `CRITICAL,HIGH` OS and dependency CVEs; results uploaded as SARIF to the GitHub Security tab (`trivy-fail-on-finding: false` by default — reports but does not block)
+3. **SBOM** — generates an SPDX-JSON Software Bill of Materials, uploaded as a 90-day artifact (`sbom-spdx`)
+4. **Start Postgres** — isolated Docker network, `app_user` created
+5. **Start app** — dynamic port (`-p 3000`)
+6. **Health check** — polls `GET /api/health` (30 retries × 3 s)
+7. **Cleanup** — always runs
+
+**Docker Compose mode** (`use-compose: true`) is also available in the reusable but not used here — kanban-app CI uses single Dockerfile mode because Coolify manages its own compose setup in production.
 
 **Why `postgres:17-alpine` (not 18)?** The `docker-compose.yml` is pinned to `postgres:16-alpine` for Coolify compatibility. Using 17 here keeps CI in a stable range without risking data volume incompatibility on the production server.
 

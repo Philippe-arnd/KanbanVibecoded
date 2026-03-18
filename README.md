@@ -105,7 +105,7 @@ This version focuses on data security and multi-tenant isolation at the database
 | PR Validation | PR → main | Lint, Vitest, RLS tests, coverage report |
 | Security & Performance | PR → main | Secret scan, SAST, bundle size |
 | Dependency Review | PR → main | CVE and license compliance |
-| Docker Validation | PR → main (Docker files only) | Docker build + health check |
+| Docker Validation | PR → main (Docker files only) | Docker build + Trivy CVE scan + SBOM + health check |
 | Auto Merge | All checks green | Squash merge |
 
 ### Docker / Coolify (Self-hosted)
