@@ -97,7 +97,7 @@ This version focuses on data security and multi-tenant isolation at the database
 
 ### GitHub Actions
 
-6 workflows run automatically on every PR and push to `main`. Five of them delegate to shared reusable workflows in [`reusable-workflow-vibecoded`](https://github.com/Philippe-arnd/reusable-workflow-vibecoded):
+7 workflows are active on `main`. Five delegate to shared reusable workflows in [`reusable-workflow-vibecoded`](https://github.com/Philippe-arnd/reusable-workflow-vibecoded):
 
 | Workflow | Trigger | Purpose |
 |---|---|---|
@@ -105,8 +105,9 @@ This version focuses on data security and multi-tenant isolation at the database
 | PR Validation | PR → main | Lint, Vitest, RLS tests, coverage report |
 | Security & Performance | PR → main | Secret scan, SAST, bundle size |
 | Dependency Review | PR → main | CVE and license compliance |
-| Docker Validation | PR → main (Docker files only) | Docker build + Trivy CVE scan + SBOM + health check |
+| Docker Validation | PR → main (Docker files) or release tag | Docker build + Trivy CVE scan + SBOM + health check |
 | Auto Merge | All checks green | Squash merge |
+| Release | Manual dispatch | Tag `YYYY.MM.DD` + changelog + GitHub release |
 
 ### Docker / Coolify (Self-hosted)
 

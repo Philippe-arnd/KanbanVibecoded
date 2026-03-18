@@ -92,15 +92,16 @@ Tasks are encrypted client-side using `VITE_ENCRYPTION_KEY` (`client/src/utils/c
 
 ## CI/CD
 
-6 GitHub Actions workflows are active on `main`. See `.github/workflows/workflow.md` for full architecture docs.
+7 GitHub Actions workflows are active on `main`. See `.github/workflows/workflow.md` for full architecture docs.
 
-**Workflows:** `ci.yml` runs inline; the other 5 are thin callers delegating to [`Philippe-arnd/reusable-workflow-vibecoded`](https://github.com/Philippe-arnd/reusable-workflow-vibecoded):
+**Workflows:** `ci.yml` and `release.yml` run inline; the other 5 are thin callers delegating to [`Philippe-arnd/reusable-workflow-vibecoded`](https://github.com/Philippe-arnd/reusable-workflow-vibecoded):
 - `ci.yml` — Inline build check on every push to main/dev
 - `pr-validation.yml` — Calls `reusable-pr-validation.yml` (lint/build + Vitest + RLS tests + coverage report)
 - `security-performance.yml` — Calls `reusable-security-performance.yml` (Gitleaks, Semgrep, bundle size)
 - `dependency-review.yml` — Calls `reusable-dependency-review.yml` (CVE and license check)
-- `docker-validation.yml` — Calls `reusable-docker-validation.yml` (Docker build + Trivy CVE scan + SBOM + health check, path-filtered)
+- `docker-validation.yml` — Calls `reusable-docker-validation.yml` (Docker build + Trivy CVE scan + SBOM + health check, path-filtered + release tags)
 - `auto-merge.yml` — Calls `reusable-auto-merge.yml` (squash-merges when all 6 required checks pass)
+- `release.yml` — Inline manual release: generates tag `YYYY.MM.DD` (or `YYYY.MM.DD-X`), changelog, and GitHub release
 
 **Key gotchas:**
 - `BETTER_AUTH_SECRET` must be ≥32 chars — shorter values crash the auth module at import time

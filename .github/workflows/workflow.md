@@ -7,7 +7,7 @@ This document describes the complete GitHub Actions CI/CD system for the kanban-
 
 ## Overview
 
-The system consists of **6 workflow files**: `ci.yml` runs inline; the other 5 are thin callers that delegate to reusable workflows in [`Philippe-arnd/reusable-workflow-vibecoded`](https://github.com/Philippe-arnd/reusable-workflow-vibecoded).
+The system consists of **7 workflow files**: `ci.yml` runs inline; the other 5 PR workflows are thin callers that delegate to reusable workflows in [`Philippe-arnd/reusable-workflow-vibecoded`](https://github.com/Philippe-arnd/reusable-workflow-vibecoded); `release.yml` is a standalone manual release workflow.
 
 ```
 Every push to main/dev
@@ -21,6 +21,9 @@ Every PR targeting main (non-draft)
 
 When any of the above complete
   └── auto-merge.yml            → reusable-auto-merge.yml
+
+Manual dispatch (or on release tag push)
+  └── release.yml               (inline — creates tag + GitHub release)
 ```
 
 ---
@@ -115,7 +118,9 @@ Key inputs passed to the reusable:
 
 ### 5. `docker-validation.yml` — Docker Validation
 
-**Trigger:** PR targeting `main`, **only when these paths change:**
+**Trigger:** PR targeting `main` (path-filtered), **or push of a release tag** (`YYYY.MM.DD` / `YYYY.MM.DD-X`)
+
+**Path filter (PR only):**
 - `Dockerfile`, `docker-compose*.yml`, `.dockerignore`
 
 **Skip condition:** Draft PRs
@@ -163,6 +168,39 @@ Key inputs passed to the reusable:
 | `block-label` | `major-update` |
 
 The reusable checks all 6 required checks via `gh pr checks`, skips draft/conflicting/blocked PRs, and squash-merges when everything is green.
+
+---
+
+### 7. `release.yml` — 🚀 Release
+
+**Trigger:** `workflow_dispatch` (manual)
+**Implementation:** Inline
+**Permissions:** `contents: write`
+
+| Step | Detail |
+|------|--------|
+| 📥 Checkout | `actions/checkout@v6`, full history (`fetch-depth: 0`) |
+| 🏷️ Determine tag | `YYYY.MM.DD`; if already taken → `YYYY.MM.DD-2`, `-3`, … |
+| 📝 Generate changelog | Parses commits since last release tag, groups by conventional commit type |
+| 🔖 Create & push tag | Annotated git tag pushed to origin |
+| 🚀 Create GitHub release | Full release with grouped changelog + optional notes |
+
+**Tag format:** `YYYY.MM.DD` (first release of the day) or `YYYY.MM.DD-X` (subsequent).
+
+**Changelog groups:**
+
+| Group | Commit types |
+|-------|-------------|
+| 🚀 Features | `feat` |
+| 🐛 Bug Fixes | `fix` |
+| ⚡ Performance | `perf` |
+| 🔒 Security | `sec`, `security` |
+| 🏗️ CI / Infra | `ci`, `build`, `infra` |
+| ♻️ Refactor / Tests | `refactor`, `test` |
+| 📦 Dependencies | `chore` (collapsed into a single summary link) |
+| 📝 Other | `docs`, `style`, `revert`, `other` |
+
+Pushing the release tag also triggers `docker-validation.yml` (full Docker build + Trivy scan + health check on the final image).
 
 ---
 
