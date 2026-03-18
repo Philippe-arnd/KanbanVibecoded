@@ -1,103 +1,100 @@
-# Kanban Vibecodé
+<p align="center">
+  <img src="client/public/favicon.svg" width="80" height="80" alt="Kanban Logo" />
+</p>
 
-<img src="client/public/favicon.svg" width="80" alt="Kanban Logo" />
+<h1 align="center">Kanban Vibecodé</h1>
 
-An intuitive Kanban-style task management application, with a retro computer style (Neo-brutalism), designed to organize your workload with a clear separation between professional and personal life.
+<p align="center">
+  A time-based Kanban app with dual Pro / Personal workspaces, end-to-end task encryption,<br/>
+  and a retro Neo-brutalism aesthetic.
+</p>
 
-> For detailed specifications, see [requirements.md](./requirements.md).
+<p align="center">
+  <a href="https://github.com/Philippe-arnd/KanbanVibecoded/actions/workflows/pr-validation.yml">
+    <img alt="PR Validation" src="https://github.com/Philippe-arnd/KanbanVibecoded/actions/workflows/pr-validation.yml/badge.svg" />
+  </a>
+  <a href="https://github.com/Philippe-arnd/KanbanVibecoded/actions/workflows/docker-validation.yml">
+    <img alt="Docker Validation" src="https://github.com/Philippe-arnd/KanbanVibecoded/actions/workflows/docker-validation.yml/badge.svg" />
+  </a>
+  <a href="https://github.com/Philippe-arnd/KanbanVibecoded/actions/workflows/dependency-review.yml">
+    <img alt="Dependency Review" src="https://github.com/Philippe-arnd/KanbanVibecoded/actions/workflows/dependency-review.yml/badge.svg" />
+  </a>
+  <a href="https://github.com/Philippe-arnd/KanbanVibecoded/releases">
+    <img alt="Latest Release" src="https://img.shields.io/github/v/tag/Philippe-arnd/KanbanVibecoded?label=release&color=blue" />
+  </a>
+</p>
 
-## Features
+---
 
-- **Time Organization**: Dynamic columns (Today, Tomorrow, This Week, This Month, Later).
-- **Dual Mode**: Instantly switch between **Pro** (Indigo theme) and **Personal** (Emerald theme) spaces.
-- **Fluid Drag & Drop**: Reorganize your tasks with simple drag-and-drop (powered by `@dnd-kit`).
-- **Retro Assistant (K-Liwy 📎)**: A Pixel Art companion that analyzes your productivity and gives advice.
-- **Complete Management**:
-  - Quick task addition.
-  - Edit by double-clicking.
-  - Mark tasks as completed.
-  - Automatic cleanup of finished tasks per column.
-- **Cloud & Security**: Full authentication and account management (Better Auth + PostgreSQL).
-- **PWA Ready**: Installable on mobile and desktop with optimized icons and offline manifest.
+## ✨ Features
 
-## What's New v2.3.0 - Hardened Isolation (RLS) 🛡️🔒
+- **Time-based columns** — Today, Tomorrow, This Week, This Month, Later
+- **Dual workspace** — Pro (Indigo) and Personal (Emerald) modes, instantly switchable
+- **Drag & drop** — fluid reordering powered by `@dnd-kit`
+- **End-to-end encryption** — tasks encrypted client-side with `VITE_ENCRYPTION_KEY` before hitting the server
+- **RLS isolation** — PostgreSQL Row Level Security enforces per-user data boundaries at the database level
+- **K-Liwy 📎** — Pixel Art retro assistant that analyses your productivity
+- **PWA ready** — installable on mobile and desktop
 
-This version focuses on data security and multi-tenant isolation at the database level.
+---
 
-### 🔐 PostgreSQL Row Level Security (RLS)
+## 🛠️ Stack
 
-- **Database-Level Isolation**: Every user query is restricted at the PostgreSQL engine level using RLS policies.
-- **withRLS Helper**: A new transactional helper ensures all sensitive operations carry the user context.
-- **Defense in Depth**: Even if the application logic is bypassed, the database denies access to data not owned by the current user.
+| Layer | Technology |
+|---|---|
+| 🖥️ Frontend | React 19 + Vite, Tailwind CSS 4, @dnd-kit |
+| ⚙️ Backend | Node.js + Express 5 |
+| 🗄️ Database | PostgreSQL + Drizzle ORM + RLS |
+| 🔐 Auth | Better Auth + Nodemailer (SMTP) |
+| 🐳 Deployment | Docker Compose on Coolify (self-hosted) |
+| 🔄 CI/CD | GitHub Actions (7 workflows) |
 
-### 🧪 Enhanced Testing
+---
 
-- **RLS Integration Tests**: Specific tests to verify cross-user data isolation.
-- **Native Node Test Runner**: Tests use `node:test` for compatibility in production/minimal environments.
-- **How to run RLS tests**:
-  ```bash
-  node --test server/tests/test-rls.js
-  ```
+## 🚀 Getting Started
 
-### 🏗️ Monorepo Structure
+### Prerequisites
 
-- **Client**: Vite-powered React application in `/client`.
-- **Server**: Node.js/Express backend in `/server`.
-- **Scripts**: Utility scripts for database seeding and management in `/scripts`.
+- Docker + Docker Compose
 
-### 🐳 Docker & Local Dev
+### 1. Configure environment
 
-- **Dockerized**: Full `Dockerfile` and `docker-compose.yml`.
-- **Local Overrides**: Support for `docker-compose.override.yml` for custom port mapping and local dev environments.
-- **CI/CD**: GitHub Actions for automated testing and deployment.
+```bash
+cp .env.example .env
+# Fill in DATABASE_URL, ADMIN_DATABASE_URL, BETTER_AUTH_SECRET, VITE_ENCRYPTION_KEY, SMTP_*
+```
 
-## Installation
+### 2. Start the full stack
 
-1. Clone the repository:
+```bash
+docker-compose up -d --build
+# App available at http://localhost:3000
+```
 
-   ```bash
-   git clone https://github.com/Philippe-arnd/KanbanVibecoded.git
-   cd KanbanVibecoded
-   ```
+The Docker entrypoint runs migrations → applies RLS policies → seeds the test user → starts the server.
 
-2. Install dependencies:
+### ⚡ Local development (hot reload)
 
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+npm run dev        # Vite (5173) + Express (3000) concurrently
+```
 
-3. Configure the environment:
-   Create a `.env` file at the root and configure your database and auth (see `.env.example`).
+---
 
-4. Run tests:
+## 🧪 Testing
 
-   ```bash
-   npm test
-   ```
+```bash
+npm test                              # Vitest unit & integration tests
+npm run test:coverage                 # With coverage report
+node --test server/tests/test-rls.js  # RLS isolation tests (node:test runner)
+```
 
-5. Start the application:
+---
 
-   ```bash
-   # Development (Vite + Node)
-   npm run dev
+## 🔄 CI/CD
 
-   # Or via Docker
-   docker-compose up -d
-   ```
-
-## Technologies
-
-- **Frontend**: React 19, Vite, Tailwind CSS 4, React Router 7.
-- **Backend**: Node.js, Express.
-- **Database**: PostgreSQL (via Drizzle ORM).
-- **Auth**: Better Auth.
-- **Utilities**: @dnd-kit, Lucide React, Docker.
-
-## Deployment (CI/CD)
-
-### GitHub Actions
-
-7 workflows are active on `main`. Five delegate to shared reusable workflows in [`reusable-workflow-vibecoded`](https://github.com/Philippe-arnd/reusable-workflow-vibecoded):
+7 GitHub Actions workflows active on `main`:
 
 | Workflow | Trigger | Purpose |
 |---|---|---|
@@ -109,12 +106,16 @@ This version focuses on data security and multi-tenant isolation at the database
 | Auto Merge | All checks green | Squash merge |
 | Release | Manual dispatch | Tag `YYYY.MM.DD` + changelog + GitHub release |
 
-### Docker / Coolify (Self-hosted)
+---
 
-1. Use the provided `docker-compose.yml` for self-hosted deployment.
-2. The application is served on port `3000` by default.
-3. Automatic database migrations and seeding are handled via the Docker entrypoint.
+## ☁️ Deployment (Coolify)
 
-## Credits
+- Use the provided `docker-compose.yml` — **do not add fixed host port mappings** (Coolify manages routing)
+- All FQDNs must use `https://` (required by Better Auth for secure session cookies)
+- Releases are created manually via the **Release** workflow (`workflow_dispatch`) from the GitHub Actions UI
 
-© 2026 - [Kanban Vibecodé](https://github.com/Philippe-arnd/KanbanVibecoded)
+---
+
+## 📄 License
+
+© 2026 — [Kanban Vibecodé](https://github.com/Philippe-arnd/KanbanVibecoded)
