@@ -1,0 +1,151 @@
+name: 🚀 Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      notes:
+        description: 'Additional release notes (optional)'
+        required: false
+        type: string
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Determine next tag
+        id: tag
+        run: |
+          DATE=$(date +%Y.%m.%d)
+          # Check if a plain date tag already exists
+          if git tag -l "$DATE" | grep -q "^${DATE}$"; then
+            # Find the highest suffix for today
+            LATEST=$(git tag -l "${DATE}-*" | sort -V | tail -1)
+            if [ -z "$LATEST" ]; then
+              SEQ=2
+            else
+              SEQ=$(echo "$LATEST" | awk -F- '{print $NF}')
+              SEQ=$((SEQ + 1))
+            fi
+            TAG="${DATE}-${SEQ}"
+          else
+            TAG="$DATE"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Tag: $TAG"
+
+      - name: Generate changelog
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { execSync } = require('child_process');
+
+            // Find last release tag
+            const allTags = execSync('git tag -l').toString().trim().split('\n').filter(Boolean);
+            const releaseTags = allTags
+              .filter(t => /^\d{4}\.\d{2}\.\d{2}(-\d+)?$/.test(t))
+              .sort();
+            const lastTag = releaseTags.at(-1) || null;
+
+            const range = lastTag ? `${lastTag}..HEAD` : 'HEAD';
+            const raw = execSync(
+              `git log ${range} --pretty=format:"%s|||%h|||%H" --no-merges`
+            ).toString().trim();
+
+            if (!raw) {
+              require('fs').writeFileSync('/tmp/changelog.md', '_No changes since last release._');
+              return;
+            }
+
+            const commits = raw.split('\n').map(line => {
+              const [subject, shortHash, fullHash] = line.split('|||');
+              const match = subject.match(/^(\w+)(\([\w-]+\))?!?:\s*(.+)$/);
+              return {
+                type: match ? match[1] : 'other',
+                scope: match ? (match[2] || '') : '',
+                msg: match ? match[3] : subject,
+                shortHash,
+                fullHash,
+              };
+            });
+
+            const GROUPS = [
+              { label: '🚀 Features',        types: ['feat'] },
+              { label: '🐛 Bug Fixes',        types: ['fix'] },
+              { label: '⚡ Performance',      types: ['perf'] },
+              { label: '🔒 Security',         types: ['sec', 'security'] },
+              { label: '🏗️ CI / Infra',       types: ['ci', 'build', 'infra'] },
+              { label: '♻️ Refactor / Tests', types: ['refactor', 'test'] },
+              { label: '📦 Dependencies',     types: ['chore'] },
+              { label: '📝 Other',            types: ['docs', 'style', 'revert', 'other'] },
+            ];
+
+            const repo = context.repo;
+            const baseUrl = `https://github.com/${repo.owner}/${repo.repo}/commit`;
+
+            let sections = [];
+            for (const group of GROUPS) {
+              const items = commits.filter(c => group.types.includes(c.type));
+              if (!items.length) continue;
+
+              // Collapse dependency bumps into a single summary line
+              if (group.types.includes('chore')) {
+                const link = `[${items.length} dependency update${items.length > 1 ? 's' : ''}](https://github.com/${repo.owner}/${repo.repo}/commits/HEAD)`;
+                sections.push(`### ${group.label}\n\n- ${link}`);
+                continue;
+              }
+
+              const lines = items.map(c => {
+                const scope = c.scope ? `**${c.scope.replace(/[()]/g, '')}**: ` : '';
+                return `- ${scope}${c.msg} ([${c.shortHash}](${baseUrl}/${c.fullHash}))`;
+              });
+              sections.push(`### ${group.label}\n\n${lines.join('\n')}`);
+            }
+
+            const changelog = sections.join('\n\n');
+            require('fs').writeFileSync('/tmp/changelog.md', changelog);
+            console.log('Changelog:\n' + changelog);
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.tag.outputs.tag }}" -m "Release ${{ steps.tag.outputs.tag }}"
+          git push origin "${{ steps.tag.outputs.tag }}"
+
+      - name: Create GitHub release
+        uses: actions/github-script@v8
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+          EXTRA_NOTES: ${{ inputs.notes }}
+        with:
+          script: |
+            const fs = require('fs');
+            const tag = process.env.TAG;
+            const extraNotes = process.env.EXTRA_NOTES || '';
+            const changelog = fs.readFileSync('/tmp/changelog.md', 'utf8').trim();
+
+            let body = `## What's Changed\n\n${changelog}`;
+            if (extraNotes) {
+              body += `\n\n---\n### Notes\n${extraNotes}`;
+            }
+
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tag,
+              name: tag,
+              body: body,
+              draft: false,
+              prerelease: false,
+            });
+
+            console.log(`Release ${tag} created successfully`);
