@@ -1,0 +1,72 @@
+name: Weekly Full Pipeline
+
+on:
+  schedule:
+    - cron: '0 3 * * 0' # Every Sunday at 03:00 UTC
+  workflow_dispatch:
+
+jobs:
+  build-check:
+    name: 🏗️ Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v6
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build
+        run: npm run build
+        env:
+          VITE_ENCRYPTION_KEY: ci-dummy-key
+
+  pr-validation:
+    name: PR Validation
+    uses: Philippe-arnd/reusable-workflow-vibecoded/.github/workflows/reusable-pr-validation.yml@main
+    with:
+      build-env: 'VITE_ENCRYPTION_KEY=ci-dummy-key'
+      postgres-db: 'kanban_test'
+      db-migration-command: 'npx drizzle-kit push --config=server/drizzle.config.js --force'
+      db-rls-setup-command: 'node server/db/apply-rls.js'
+      rls-test-command: 'node --test server/tests/test-rls.js'
+      test-env: |
+        BETTER_AUTH_SECRET=ci-secret-for-better-auth-minimum-32-chars
+        BETTER_AUTH_URL=http://localhost:3000
+    permissions:
+      contents: read
+      pull-requests: write
+
+  security-performance:
+    name: Security & Performance
+    uses: Philippe-arnd/reusable-workflow-vibecoded/.github/workflows/reusable-security-performance.yml@main
+    with:
+      build-env: 'VITE_ENCRYPTION_KEY=ci-dummy-key'
+      bundle-client-dir: 'client'
+      semgrep-extra-config: '.semgrep.yml'
+      bundle-js-limit-kb: 600
+      bundle-css-limit-kb: 80
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+
+  docker-validation:
+    name: Docker Validation
+    uses: Philippe-arnd/reusable-workflow-vibecoded/.github/workflows/reusable-docker-validation.yml@main
+    with:
+      postgres-db: 'kanban_test'
+      postgres-image: 'postgres:17-alpine'
+      image-tag: 'kanban-app:ci-test'
+      build-args: 'VITE_ENCRYPTION_KEY=ci-dummy-key'
+      app-env: |
+        BETTER_AUTH_SECRET=ci-secret-for-better-auth-minimum-32-chars
+        BETTER_AUTH_URL=http://localhost:3000
+        NODE_ENV=production
