@@ -8,15 +8,18 @@ on:
       - 'docker-compose*.yml'
       - '.dockerignore'
     types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    tags:
+      - 'release-*'
 
 concurrency:
-  group: docker-validation-${{ github.event.pull_request.number }}
+  group: docker-validation-${{ github.event.pull_request.number || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
   docker-validation:
     name: Docker Validation
-    if: github.event.pull_request.draft == false
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
     uses: Philippe-arnd/reusable-workflow-vibecoded/.github/workflows/reusable-docker-validation.yml@main
     with:
       postgres-db: 'kanban_test'
