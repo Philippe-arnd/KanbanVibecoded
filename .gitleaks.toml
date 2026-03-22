@@ -39,6 +39,7 @@ paths = ['''.github/''']
 regexes = [
   '''(?i)(test|placeholder|example|dummy|ci)''',
   '''\$\{\{[^}]+\}\}''',
+  '''\$\{[A-Z_]+\}''',
 ]
 
 [[rules]]

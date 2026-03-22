@@ -53,7 +53,7 @@ jobs:
       compose-health-service: app
       compose-health-port: 3000
       run-trivy-scan: true
-      trivy-compose-image: kanbanapp-app
+      trivy-compose-image: kanbanvibecoded-app
       trivy-fail-on-finding: false
     permissions:
       contents: read
