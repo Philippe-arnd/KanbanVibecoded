@@ -1,0 +1,4 @@
+# Gitleaks ignore file — fingerprints of known false positives
+# These are shell variable references (${VAR}), not real secrets.
+da845d81dadc58554978b12e4cf18f65c854f555:docker-compose.yml:jwt-better-auth-secret:13
+eeb3be6ba406dd2c103562074ccc3154160e4a37:docker-compose.yml:jwt-better-auth-secret:10

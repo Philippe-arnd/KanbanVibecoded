@@ -42,6 +42,7 @@ jobs:
     with:
       use-compose: true
       compose-env-content: |
+        COMPOSE_PROJECT_NAME=kanbanapp
         DATABASE_URL=postgresql://postgres:postgres@postgres:5432/kanban_prod
         ADMIN_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/kanban_prod
         BETTER_AUTH_SECRET=ci-secret-for-better-auth-minimum-32-chars
@@ -53,7 +54,7 @@ jobs:
       compose-health-service: app
       compose-health-port: 3000
       run-trivy-scan: true
-      trivy-compose-image: kanbanvibecoded-app
+      trivy-compose-image: kanbanapp-app
       trivy-fail-on-finding: false
     permissions:
       contents: read
