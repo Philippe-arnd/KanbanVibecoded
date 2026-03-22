@@ -26,7 +26,7 @@ jobs:
       postgres-db: 'kanban_test'
       postgres-image: 'postgres:17-alpine'
       image-tag: 'kanban-app:ci-test'
-      build-args: 'VITE_ENCRYPTION_KEY=ci-dummy-key'
+      build-args: '--build-arg VITE_ENCRYPTION_KEY=ci-dummy-key'
       app-env: |
         BETTER_AUTH_SECRET=ci-secret-for-better-auth-minimum-32-chars
         BETTER_AUTH_URL=http://localhost:3000

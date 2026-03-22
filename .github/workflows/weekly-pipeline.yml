@@ -1,4 +1,4 @@
-name: Weekly Full Pipeline
+name: 📅 Weekly Full Pipeline
 
 on:
   schedule:
@@ -6,28 +6,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-check:
-    name: 🏗️ Build Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v6
-
-      - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
-
-      - name: 📦 Install dependencies
-        run: npm ci
-
-      - name: 🏗️ Build
-        run: npm run build
-        env:
-          VITE_ENCRYPTION_KEY: ci-dummy-key
-
   pr-validation:
     name: PR Validation
     uses: Philippe-arnd/reusable-workflow-vibecoded/.github/workflows/reusable-pr-validation.yml@main
@@ -62,11 +40,22 @@ jobs:
     name: Docker Validation
     uses: Philippe-arnd/reusable-workflow-vibecoded/.github/workflows/reusable-docker-validation.yml@main
     with:
-      postgres-db: 'kanban_test'
-      postgres-image: 'postgres:17-alpine'
-      image-tag: 'kanban-app:ci-test'
-      build-args: 'VITE_ENCRYPTION_KEY=ci-dummy-key'
-      app-env: |
+      use-compose: true
+      compose-env-content: |
+        DATABASE_URL=postgresql://postgres:postgres@postgres:5432/kanban_prod
+        ADMIN_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/kanban_prod
         BETTER_AUTH_SECRET=ci-secret-for-better-auth-minimum-32-chars
         BETTER_AUTH_URL=http://localhost:3000
-        NODE_ENV=production
+        VITE_ENCRYPTION_KEY=ci-dummy-key
+        TEST_USER_EMAIL=test@example.com
+        TEST_USER_PWD=test-password-for-ci
+      compose-services-to-build: 'app'
+      compose-health-service: app
+      compose-health-port: 3000
+      run-trivy-scan: true
+      trivy-compose-image: kanbanapp-app
+      trivy-fail-on-finding: false
+    permissions:
+      contents: read
+      security-events: write
+      actions: write
