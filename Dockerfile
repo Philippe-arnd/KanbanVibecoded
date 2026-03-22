@@ -11,8 +11,8 @@ RUN npm run build
 # Production stage
 FROM node:24-alpine
 WORKDIR /app
-# Install wget for healthcheck
-RUN apk add --no-cache wget
+# Upgrade base packages (fixes CVE-2026-22184, CVE-2026-27171 in zlib) then install wget for healthcheck
+RUN apk upgrade --no-cache && apk add --no-cache wget
 COPY package*.json ./
 RUN npm install --omit=dev
 COPY --from=build /app/client/dist ./client/dist
