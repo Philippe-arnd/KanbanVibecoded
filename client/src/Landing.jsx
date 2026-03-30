@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { CheckSquare, Monitor, Save, MousePointer, Github } from 'lucide-react'
+import { CheckSquare, Monitor, Save, MousePointer, Code } from 'lucide-react'
 import { useAuth } from './hooks/useAuth'
 
 export function Landing() {
@@ -133,7 +133,7 @@ export function Landing() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 hover:text-black/60 transition-colors"
           >
-            Kanban Vibecodé <Github size={16} />
+            Kanban Vibecodé <Code size={16} />
           </a>
           <p className="opacity-50">Optimized for Netscape Navigator and Internet Explorer 4.0.</p>
         </div>
