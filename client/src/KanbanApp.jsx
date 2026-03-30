@@ -28,7 +28,7 @@ import {
   Loader2,
   LogOut,
   KeyRound,
-  Github,
+  Code,
   Settings,
   AlertTriangle,
 } from 'lucide-react'
@@ -387,7 +387,7 @@ export default function KanbanApp() {
             rel="noopener noreferrer"
             className="flex items-center gap-1 hover:text-black/60 transition-colors"
           >
-            Kanban Vibecodé <Github size={16} />
+            Kanban Vibecodé <Code size={16} />
           </a>
         </p>
       </footer>
