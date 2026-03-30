@@ -16,9 +16,6 @@
   <a href="https://github.com/Philippe-arnd/KanbanVibecoded/actions/workflows/docker-validation.yml">
     <img alt="Docker Validation" src="https://github.com/Philippe-arnd/KanbanVibecoded/actions/workflows/docker-validation.yml/badge.svg" />
   </a>
-  <a href="https://github.com/Philippe-arnd/KanbanVibecoded/actions/workflows/weekly-pipeline.yml">
-    <img alt="Weekly Pipeline" src="https://github.com/Philippe-arnd/KanbanVibecoded/actions/workflows/weekly-pipeline.yml/badge.svg" />
-  </a>
   <a href="https://github.com/Philippe-arnd/KanbanVibecoded/actions/workflows/dependency-review.yml">
     <img alt="Dependency Review" src="https://github.com/Philippe-arnd/KanbanVibecoded/actions/workflows/dependency-review.yml/badge.svg" />
   </a>

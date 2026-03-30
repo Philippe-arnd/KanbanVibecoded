@@ -9,6 +9,7 @@ on:
       - '.dockerignore'
     types: [opened, synchronize, reopened, ready_for_review]
   push:
+    branches: [main]
     tags:
       - '[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]'
       - '[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]-*'
