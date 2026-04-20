@@ -43,7 +43,7 @@ jobs:
           echo "Tag: $TAG"
 
       - name: Generate changelog
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const { execSync } = require('child_process');
@@ -122,7 +122,7 @@ jobs:
           git push origin "${{ steps.tag.outputs.tag }}"
 
       - name: Create GitHub release
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           TAG: ${{ steps.tag.outputs.tag }}
           EXTRA_NOTES: ${{ inputs.notes }}
