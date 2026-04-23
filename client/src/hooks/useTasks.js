@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import { arrayMove } from '@dnd-kit/sortable'
 import { encrypt, decrypt } from '../utils/crypto'
 
@@ -6,11 +6,10 @@ const API_URL = '/api'
 
 export function useTasks(session) {
   const [tasks, setTasks] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [loading, startTransition] = useTransition()
 
   async function fetchTasks() {
     try {
-      setLoading(true)
       const res = await fetch(`${API_URL}/tasks`, {
         credentials: 'include',
       })
@@ -29,14 +28,12 @@ export function useTasks(session) {
       setTasks(decryptedData)
     } catch (error) {
       console.error('Error loading tasks:', error.message)
-    } finally {
-      setLoading(false)
     }
   }
 
   useEffect(() => {
     if (session?.user) {
-      fetchTasks()
+      startTransition(fetchTasks)
     }
   }, [session])
 
