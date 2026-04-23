@@ -22,6 +22,10 @@ jobs:
   docker-validation:
     name: Docker Validation
     if: github.event_name == 'push' || github.event.pull_request.draft == false
+    permissions:
+      contents: read
+      security-events: write
+      actions: write
     uses: Philippe-arnd/reusable-workflow-vibecoded/.github/workflows/reusable-docker-validation.yml@main
     with:
       postgres-db: 'kanban_test'
