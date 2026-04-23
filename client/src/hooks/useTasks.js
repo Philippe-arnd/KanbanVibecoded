@@ -8,14 +8,6 @@ export function useTasks(session) {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if (session?.user) {
-      fetchTasks()
-    } else {
-      setTasks([])
-    }
-  }, [session])
-
   async function fetchTasks() {
     try {
       setLoading(true)
@@ -41,6 +33,12 @@ export function useTasks(session) {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (session?.user) {
+      fetchTasks()
+    }
+  }, [session])
 
   const addTask = async (title, mode) => {
     if (!title.trim() || !session?.user) return
@@ -279,7 +277,7 @@ export function useTasks(session) {
   }
 
   return {
-    tasks,
+    tasks: session?.user ? tasks : [],
     setTasks,
     loading,
     addTask,
