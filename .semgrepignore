@@ -5,3 +5,6 @@ server/tests/
 client/src/**/*.test.*
 server/drizzle/
 coverage/
+# Better Auth email templates — {{ .ConfirmationURL }} is server-generated, not user input
+server/db/reset_password.html
+server/db/confirm_signup.html

@@ -126,3 +126,34 @@ CVE-2026-31802
 CVE-2026-26996
 CVE-2026-27903
 CVE-2026-27904
+
+# ============================================================
+# New Go stdlib CVEs in esbuild binaries (drizzle-kit + @esbuild-kit/core-utils)
+# Same rationale as above: esbuild is a CLI build tool, never a network server.
+# ============================================================
+# golang.org/x/net/proxy: HTTP Proxy bypass via IPv6 Zone IDs
+CVE-2025-22870
+# crypto/x509 + crypto/tls: DoS via certificate chain building
+CVE-2026-32280
+# crypto/x509: DoS via inefficient certificate chain validation
+CVE-2026-32281
+# internal/syscall/unix: Root.Chmod can follow symlinks out of root
+CVE-2026-32282
+# crypto/tls: DoS via multiple key update messages
+CVE-2026-32283
+# archive/tar: DoS via maliciously-crafted archive
+CVE-2026-32288
+# html/template: XSS via improper JS template literal context tracking
+CVE-2026-32289
+
+# ============================================================
+# npm bundled picomatch and brace-expansion (usr/local/lib/node_modules/npm/)
+# ============================================================
+# npm's own internal packages — production container does not run npm install
+# from untrusted sources at runtime.
+# picomatch: ReDoS via crafted extglob patterns
+CVE-2026-33671
+# picomatch: data integrity via method injection with POSIX bracket expressions
+CVE-2026-33672
+# brace-expansion: DoS via zero step value in brace pattern
+CVE-2026-33750
