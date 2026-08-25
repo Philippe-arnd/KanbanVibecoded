@@ -35,6 +35,11 @@ export const account = pgTable('account', {
   id: text('id').primaryKey(),
   accountId: text('account_id').notNull(),
   providerId: text('provider_id').notNull(),
+  // better-auth 1.7 scopes account identity by issuer (see 1-7-upgrade-guide).
+  // This app only uses the email/password ("credential") provider, whose
+  // synthetic issuer is always "local:credential" — safe as both the
+  // default for existing rows and the value for new ones.
+  issuer: text('issuer').notNull().default('local:credential'),
   userId: text('user_id')
     .notNull()
     .references(() => user.id),
