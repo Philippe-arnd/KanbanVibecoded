@@ -80,7 +80,7 @@ rules:
   - id: xss-dangerously-set-inner-html
     patterns:
       - pattern: |
-          dangerouslySetInnerHTML={{__html: $VAL}}
+          <$TAG ... dangerouslySetInnerHTML={{__html: $VAL}} ... />
     message: dangerouslySetInnerHTML can expose the app to XSS attacks. Ensure input is sanitized.
     languages: [javascript]
     severity: WARNING
