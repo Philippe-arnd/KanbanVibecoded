@@ -8,6 +8,10 @@ export const DIALOGS = {
     "It's quiet... too quiet. Check your SCSI cables.",
     "I feel like you're looking at me instead of working.",
     "How about a little 'Ctrl+Alt+Del' on this task?",
+    'Booting productivity.exe... please wait.',
+    "I'd offer a paperclip, but I'm fresh out of budget.",
+    'Insert Coin to continue your to-do list.',
+    'My cursor is blinking. So is my patience.',
   ],
   // Too many tasks (> 8)
   overwhelmed: [
@@ -15,18 +19,27 @@ export const DIALOGS = {
     'Alert: Buffer Overflow imminent. You might want to archive some stuff.',
     'So many tasks, so little RAM...',
     "We're going to need a faster Pentium processor to handle all this.",
+    'ERROR 404: Free time not found.',
+    "You've got more open tasks than I've got open ports.",
+    'Stack overflow warning: consider a smaller call stack of chores.',
   ],
   // Good productivity (many tasks completed today)
   productive: [
     'Maximum productivity detected. Grab a coffee, you earned it.',
     "Look at you go! It's almost as satisfying as peeling the plastic off a new screen.",
     'Your efficiency is overheating my fan.',
+    'Achievement unlocked: Task Master.',
+    "You're running at turbo speed, like a 486 with the button pressed in.",
+    'System status: nominal. You, however, are exceptional.',
   ],
   // Late at night (after 10 PM)
   lateNight: [
     "It's dark. Don't forget to save to floppy before sleeping.",
     'Your eyes are turning square. Time to turn off the monitor.',
     'Even Windows 95 needs to reboot sometimes. Go to bed.',
+    'Entering sleep mode soon. You should too.',
+    'The night shift crew called, they said get some rest.',
+    'CRT screens glow less appealing at 2 AM. Just saying.',
   ],
 }
 

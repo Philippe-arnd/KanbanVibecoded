@@ -33,6 +33,7 @@ const PixelKIcon = () => (
 export default function RetroAssistant({ tasks }) {
   const [message, setMessage] = useState('')
   const [isVisible, setIsVisible] = useState(false)
+  const [isReduced, setIsReduced] = useState(false)
 
   // Le cerveau de l'assistant
   useEffect(() => {
@@ -77,7 +78,7 @@ export default function RetroAssistant({ tasks }) {
     // hidden md:flex -> CACHÉ SUR MOBILE, visible sur Desktop
     <div className="fixed bottom-8 right-8 hidden md:flex flex-col items-end z-50 pointer-events-none">
       {/* La bulle de dialogue rétro (style tooltip jaune) */}
-      {isVisible && message && (
+      {!isReduced && isVisible && message && (
         <div className="mb-4 relative bg-[#FFFFE1] border-2 border-black shadow-[4px_4px_0px_0px_black] p-4 max-w-xs animate-bounce-in origin-bottom-right font-mono text-sm pointer-events-auto">
           {message}
           {/* Le petit triangle de la bulle */}
@@ -97,7 +98,12 @@ export default function RetroAssistant({ tasks }) {
       )}
 
       {/* Le Personnage */}
-      <div className="hover:animate-wiggle pointer-events-auto cursor-help transition-transform hover:scale-110">
+      <div
+        onClick={() => setIsReduced((prev) => !prev)}
+        className={`pointer-events-auto cursor-pointer transition-transform ${
+          isReduced ? 'scale-50 origin-bottom-right' : 'hover:animate-wiggle hover:scale-110'
+        }`}
+      >
         <PixelKIcon />
       </div>
     </div>
