@@ -59,7 +59,10 @@ export default function Auth() {
         setShowSuccess(true)
       }
     } else if (view === 'forgot_password') {
-      const { error } = await authClient.forgetPassword({
+      // better-auth 1.7 renamed this endpoint from /forget-password to
+      // /request-password-reset (forgetPassword() 404s against the current
+      // server) — see JournalVibecoded#225, same bug, same fix.
+      const { error } = await authClient.requestPasswordReset({
         email,
         redirectTo: `${window.location.origin}/app`,
       })
