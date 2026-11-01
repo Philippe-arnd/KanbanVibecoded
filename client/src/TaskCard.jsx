@@ -34,6 +34,8 @@ export const TaskCard = React.memo(function TaskCard({
   const subtasksCount = Array.isArray(task.subtasks) ? task.subtasks.length : 0
   const completedSubtasksCount =
     subtasksCount > 0 ? task.subtasks.filter((st) => st.completed).length : 0
+  const allSubtasksDone = subtasksCount > 0 && completedSubtasksCount === subtasksCount
+  const SubtasksIcon = allSubtasksDone ? CheckCircle2 : ListTodo
 
   return (
     <div
@@ -62,10 +64,14 @@ export const TaskCard = React.memo(function TaskCard({
             {subtasksCount > 0 && (
               <div
                 onClick={() => openTaskModal(task)}
-                className="flex items-center gap-1 text-[10px] font-bold text-black/50 bg-black/5 px-1.5 py-0.5 border border-black/10 rounded-sm flex-shrink-0 h-fit cursor-pointer hover:bg-black/10 hover:text-black transition-colors"
+                className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 border rounded-sm flex-shrink-0 h-fit cursor-pointer transition-colors ${
+                  allSubtasksDone
+                    ? 'text-black bg-[#88D8B0] border-black hover:brightness-95'
+                    : 'text-black/50 bg-black/5 border-black/10 hover:bg-black/10 hover:text-black'
+                }`}
                 title="View details"
               >
-                <ListTodo size={12} />
+                <SubtasksIcon size={12} />
                 <span>
                   {completedSubtasksCount}/{subtasksCount}
                 </span>

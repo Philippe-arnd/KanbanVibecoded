@@ -244,7 +244,13 @@ export function TaskDetailsModal({ task, onClose, onUpdate, onDelete }) {
             <div className="flex justify-between items-end mb-2">
               <span className="text-sm font-bold text-black uppercase">Checklist</span>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-black/60">
+                <span
+                  className={`text-xs font-bold ${
+                    subtasks.length > 0 && completedCount === subtasks.length
+                      ? 'text-black bg-[#88D8B0] border border-black px-1.5 py-0.5'
+                      : 'text-black/60'
+                  }`}
+                >
                   {progress}% ({completedCount}/{subtasks.length})
                 </span>
               </div>
