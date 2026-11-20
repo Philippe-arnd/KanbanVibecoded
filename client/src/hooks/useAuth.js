@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { authClient } from '../lib/auth-client'
+import { identifyUser, clearUser } from '../observability.js'
 
 export function useAuth() {
   const { data: session, isPending } = authClient.useSession()
@@ -22,8 +23,15 @@ export function useAuth() {
     // Let's leave it as manual state for now or check URL params if needed.
   }, [])
 
+  const sessionUser = session?.user
+  useEffect(() => {
+    if (sessionUser) identifyUser(sessionUser)
+    else if (!isPending) clearUser()
+  }, [sessionUser, isPending])
+
   const logout = async () => {
     await authClient.signOut()
+    clearUser()
   }
 
   return {
