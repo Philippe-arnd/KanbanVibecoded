@@ -9,10 +9,17 @@ on:
       - 'Docker Validation'
     types: [completed]
 
+concurrency:
+  group: auto-merge-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
 jobs:
   auto-merge:
     name: Auto Merge
-    if: github.event.workflow_run.conclusion == 'success'
+    # Also run on failure: if all 4 triggering workflows failed, success-only would
+    # never evaluate check-status, so a fully-broken Renovate PR would never get an
+    # issue filed either. check-status re-derives real state from the checks API.
+    if: github.event.workflow_run.conclusion == 'success' || github.event.workflow_run.conclusion == 'failure'
     uses: Philippe-arnd/reusable-workflow-vibecoded/.github/workflows/reusable-auto-merge.yml@main
     with:
       required-checks: |
@@ -25,7 +32,11 @@ jobs:
       merge-method: 'squash'
       base-branch: 'main'
       block-label: 'major-update'
+      file-issue-on-failure: true
+      triggering-conclusion: ${{ github.event.workflow_run.conclusion }}
+      triggering-branch: ${{ github.event.workflow_run.head_branch }}
     permissions:
       contents: write
       pull-requests: write
       checks: read
+      issues: write
