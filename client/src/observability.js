@@ -71,7 +71,19 @@ export function initObservability() {
     sessionSampleRate: 100,
   })
 
-  if (Math.random() * 100 < REPLAY_BASELINE_SAMPLE_RATE) {
+  // Deterministic opt-in for testing: open the app with ?o2replay=1 (remembered in localStorage;
+  // ?o2replay=0 turns it off). Only affects the visitor's own session.
+  let forceReplay = false
+  try {
+    const flag = new URLSearchParams(window.location.search).get('o2replay')
+    if (flag === '1') localStorage.setItem('o2_replay', '1')
+    if (flag === '0') localStorage.removeItem('o2_replay')
+    forceReplay = localStorage.getItem('o2_replay') === '1'
+  } catch {
+    /* storage unavailable */
+  }
+
+  if (forceReplay || Math.random() * 100 < REPLAY_BASELINE_SAMPLE_RATE) {
     openobserveRum.startSessionReplayRecording()
   }
 

@@ -144,7 +144,25 @@ app.delete('/api/tasks/:id', getSession, async (req, res) => {
 })
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../client/dist')))
+// The OpenObserve session-replay player (iframe on the OpenObserve origin) re-fetches our
+// CSS/fonts/images to rebuild the page: allow that single origin (derived from O2_PROXY_TARGET).
+const o2Origin = (() => {
+  try {
+    return process.env.O2_PROXY_TARGET ? new URL(process.env.O2_PROXY_TARGET).origin : ''
+  } catch {
+    return ''
+  }
+})()
+app.use(
+  express.static(path.join(__dirname, '../client/dist'), {
+    setHeaders: (res) => {
+      if (o2Origin) {
+        res.setHeader('Access-Control-Allow-Origin', o2Origin)
+        res.append('Vary', 'Origin')
+      }
+    },
+  }),
+)
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
