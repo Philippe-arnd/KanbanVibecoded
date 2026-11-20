@@ -9,6 +9,10 @@ on:
       - 'Docker Validation'
     types: [completed]
 
+concurrency:
+  group: auto-merge-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
 jobs:
   auto-merge:
     name: Auto Merge
@@ -25,7 +29,11 @@ jobs:
       merge-method: 'squash'
       base-branch: 'main'
       block-label: 'major-update'
+      file-issue-on-failure: true
+      triggering-conclusion: ${{ github.event.workflow_run.conclusion }}
+      triggering-branch: ${{ github.event.workflow_run.head_branch }}
     permissions:
       contents: write
       pull-requests: write
       checks: read
+      issues: write
