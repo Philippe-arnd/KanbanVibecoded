@@ -12,6 +12,9 @@ const applicationId = env.VITE_OO_APP_ID
 const service = env.VITE_OO_SERVICE_NAME
 const site = env.VITE_OO_SITE || 'openobserve-mntizcveu9veqqliv9ol6azr.philapps.com'
 const organizationIdentifier = env.VITE_OO_ORG || 'default'
+// Telemetry is relayed through the backend (same-origin for Kanban, API origin for Journal):
+// no cross-origin request to OpenObserve, immune to service workers and tracker blockers.
+const proxy = `${window.location.origin}/api/o2-proxy`
 
 // Share of sessions that are fully replayed from the start. Every other session
 // is only recorded from the first error onwards (see below) to save disk space.
@@ -40,6 +43,7 @@ export function initObservability() {
     organizationIdentifier,
     apiVersion: 'v1',
     insecureHTTP: false,
+    proxy,
     service,
     env: env.MODE,
   }
