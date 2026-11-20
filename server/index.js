@@ -4,6 +4,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { toNodeHandler } from 'better-auth/node'
 import { auth } from './auth.js'
+import { createO2Proxy } from './o2-proxy.js'
 import { withRLS } from './db/index.js'
 import { tasks } from './db/schema.js'
 import { eq } from 'drizzle-orm'
@@ -38,6 +39,9 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'traceparent', 'tracestate', 'baggage'],
   })
 )
+
+// OpenObserve RUM relay: must run before express.json (it needs the raw body)
+app.use('/api/o2-proxy', createO2Proxy())
 
 app.use(express.json())
 

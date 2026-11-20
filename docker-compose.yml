@@ -26,6 +26,7 @@ services:
       - 'OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-}'
       - 'OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS:-}'
       - 'OTEL_LOG_LEVEL=${OTEL_LOG_LEVEL:-}'
+      - 'O2_PROXY_TARGET=${O2_PROXY_TARGET:-}'
     depends_on:
       postgres:
         condition: service_healthy
