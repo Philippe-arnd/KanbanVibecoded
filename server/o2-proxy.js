@@ -9,9 +9,38 @@
 import express from 'express'
 
 const ALLOWED_PATH = /^\/rum\/v1\/[A-Za-z0-9_-]+\/(rum|logs|replay)$/
-const MAX_BODY = '10mb'
+const MAX_BODY_BYTES = 10 * 1024 * 1024
 const WINDOW_MS = 60_000
 const MAX_REQ_PER_WINDOW = 300
+// Collects the request body exactly as sent (no decompression, no parsing): express.raw would
+// either inflate gzip/deflate payloads or reject them with 415 when inflate is disabled.
+function collectRawBody(req, res, next) {
+  const declared = Number(req.headers['content-length'] || 0)
+  if (declared > MAX_BODY_BYTES) return res.status(413).end()
+  const chunks = []
+  let size = 0
+  let aborted = false
+  req.on('data', (chunk) => {
+    if (aborted) return
+    size += chunk.length
+    if (size > MAX_BODY_BYTES) {
+      aborted = true
+      res.status(413).end()
+      req.destroy()
+      return
+    }
+    chunks.push(chunk)
+  })
+  req.on('end', () => {
+    if (aborted) return
+    req.body = Buffer.concat(chunks)
+    next()
+  })
+  req.on('error', () => {
+    if (!aborted) res.status(400).end()
+  })
+}
+
 const hits = new Map()
 
 function limited(ip) {
@@ -62,7 +91,7 @@ export function createO2Proxy() {
       res.status(502).end()
     }
   }
-  // Raw body, whatever the content type (json, text/plain, multipart, gzip).
-  router.all('/', express.raw({ type: () => true, limit: MAX_BODY }), handler)
+  // Raw body, whatever the content type or encoding (json, text/plain, multipart, gzip, deflate).
+  router.all('/', collectRawBody, handler)
   return router
 }
