@@ -1,5 +1,5 @@
 # Build stage
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -9,7 +9,7 @@ ENV VITE_ENCRYPTION_KEY=$VITE_ENCRYPTION_KEY
 RUN npm run build
 
 # Production stage
-FROM node:24-alpine
+FROM node:26-alpine
 WORKDIR /app
 # Upgrade base packages (fixes CVE-2026-22184, CVE-2026-27171 in zlib) then install wget for healthcheck
 RUN apk upgrade --no-cache && apk add --no-cache wget
