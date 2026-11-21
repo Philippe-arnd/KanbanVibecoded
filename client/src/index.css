@@ -28,3 +28,12 @@
 body {
   @apply bg-gray-50 text-gray-900;
 }
+
+/* Graph-paper texture for the landing hero. Pure CSS (was a PNG hotlinked from
+   transparenttextures.com: a third party saw every visit and could vanish). */
+.bg-graphy {
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 0 0 / 0.05) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
