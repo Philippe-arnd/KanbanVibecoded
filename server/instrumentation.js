@@ -59,7 +59,7 @@ if (enabled) {
         // package, whose own instrumentation emits those "middleware - x" spans.
         '@opentelemetry/instrumentation-router': { enabled: false },
         '@opentelemetry/instrumentation-express': {
-          ignoreLayersType: ['middleware', 'request_handler'],
+          ignoreLayersType: ['router', 'middleware', 'request_handler'],
         },
       }),
     ],
