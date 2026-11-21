@@ -137,7 +137,8 @@ function pauseReplay() {
 
 export function identifyUser(user) {
   if (!enabled || !user) return
-  const info = { id: user.id, name: user.name, email: user.email }
+  // id only: RUM data is kept for months, the email/name are not needed to group sessions.
+  const info = { id: user.id }
   openobserveRum.setUser(info)
   openobserveLogs.setUser(info)
 }
@@ -146,4 +147,11 @@ export function clearUser() {
   if (!enabled) return
   openobserveRum.clearUser()
   openobserveLogs.clearUser()
+}
+
+// Reports a handled error to RUM with structured context. Never put user content in `context`
+// (ids and field names only): RUM data is kept for months.
+export function reportError(error, context) {
+  if (!enabled) return
+  openobserveRum.addError(error instanceof Error ? error : new Error(String(error)), context)
 }

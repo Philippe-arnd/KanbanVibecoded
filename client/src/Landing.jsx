@@ -45,7 +45,7 @@ export function Landing() {
         </div>
 
         {/* HERO SECTION */}
-        <div className="p-8 md:p-20 flex flex-col items-center text-center border-b-2 border-black bg-[url('https://www.transparenttextures.com/patterns/graphy.png')]">
+        <div className="p-8 md:p-20 flex flex-col items-center text-center border-b-2 border-black bg-graphy">
           <div className="inline-block bg-[#FFC8A2] border-2 border-black px-4 py-1 mb-6 font-bold text-sm shadow-[4px_4px_0px_black] rotate-2">
             NEW! VERSION 2.0
           </div>
