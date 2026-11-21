@@ -59,7 +59,10 @@ export function initObservability() {
     trackResources: true,
     trackLongTasks: true,
     trackUserInteractions: true,
-    defaultPrivacyLevel: 'mask-user-input',
+    // 'mask' (not 'mask-user-input'): task titles and subtasks are decrypted client-side and
+    // rendered as plain DOM text. 'mask-user-input' only hides form fields, so titles leaked into
+    // session replays AND into RUM action names (click targets). 'mask' covers both.
+    defaultPrivacyLevel: 'mask',
     // Propagate W3C traceparent to the (OpenTelemetry-instrumented) backend.
     allowedTracingUrls: tracingUrls(),
     propagatorTypes: ['tracecontext'],
