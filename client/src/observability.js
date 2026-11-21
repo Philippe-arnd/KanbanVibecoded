@@ -10,7 +10,7 @@ const env = import.meta.env
 const clientToken = env.VITE_OO_RUM_TOKEN
 const applicationId = env.VITE_OO_APP_ID
 const service = env.VITE_OO_SERVICE_NAME
-const site = env.VITE_OO_SITE || 'openobserve-mntizcveu9veqqliv9ol6azr.philapps.com'
+const site = env.VITE_OO_SITE || 'openobserve.philapps.com'
 const organizationIdentifier = env.VITE_OO_ORG || 'default'
 // Telemetry is relayed through the backend (same-origin for Kanban, API origin for Journal):
 // no cross-origin request to OpenObserve, immune to service workers and tracker blockers.
