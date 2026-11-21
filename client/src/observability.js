@@ -16,7 +16,7 @@ const organizationIdentifier = env.VITE_OO_ORG || 'default'
 // no cross-origin request to OpenObserve, immune to service workers and tracker blockers.
 const proxy = `${window.location.origin}/api/o2-proxy`
 
-// Share of sessions that are fully replayed from the start. Every other session
+// Share of sessions whose replay is wanted from the start. Every other session
 // is only recorded from the first error onwards (see below) to save disk space.
 const REPLAY_BASELINE_SAMPLE_RATE = 10
 
@@ -87,12 +87,52 @@ export function initObservability() {
   }
 
   if (forceReplay || Math.random() * 100 < REPLAY_BASELINE_SAMPLE_RATE) {
-    openobserveRum.startSessionReplayRecording()
+    wantReplay()
   }
 
-  const startReplayOnError = () => openobserveRum.startSessionReplayRecording()
-  window.addEventListener('error', startReplayOnError)
-  window.addEventListener('unhandledrejection', startReplayOnError)
+  window.addEventListener('error', wantReplay)
+  window.addEventListener('unhandledrejection', wantReplay)
+
+  // Any of these counts as user activity: it (re)starts the recording if this session wants a
+  // replay, and pushes back the idle pause. Merely having the tab open does not.
+  for (const type of ['pointerdown', 'keydown', 'touchstart', 'scroll', 'wheel']) {
+    window.addEventListener(type, resumeReplay, { capture: true, passive: true })
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') pauseReplay()
+  })
+}
+
+// Replay recording is paused after REPLAY_IDLE_MS without user interaction, or as soon as the
+// tab is hidden, and resumed on the next interaction. The RUM SDK itself keeps a session alive
+// while the tab is visible (up to 4 h), so without this an idle open tab would keep recording.
+// Only sessions that want a replay (baseline sample, ?o2replay=1, or after an error) resume.
+// Trade-off: each resume starts with a fresh full DOM snapshot (a few tens of kB).
+const REPLAY_IDLE_MS = 60_000
+let replayWanted = false
+let recording = false
+let idleTimer
+
+function wantReplay() {
+  replayWanted = true
+  resumeReplay()
+}
+
+function resumeReplay() {
+  if (!replayWanted || document.visibilityState !== 'visible') return
+  if (!recording) {
+    openobserveRum.startSessionReplayRecording()
+    recording = true
+  }
+  clearTimeout(idleTimer)
+  idleTimer = setTimeout(pauseReplay, REPLAY_IDLE_MS)
+}
+
+function pauseReplay() {
+  clearTimeout(idleTimer)
+  if (!recording) return
+  openobserveRum.stopSessionReplayRecording()
+  recording = false
 }
 
 export function identifyUser(user) {
