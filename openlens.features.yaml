@@ -1,0 +1,34 @@
+# OpenLens feature map for Kanban (https://openlens.philapps.com).
+# Kept current by the agents that change the app: see the rule in CLAUDE.md.
+version: 1
+churn_after_days: 14
+# Kanban has no user roles: every account is a plain user.
+roles:
+  - key: user
+    match: ["user"]
+features:
+  - key: add-task
+    name: Add a task
+    entry:
+      selectors: ['[data-feature="add-task"]']
+    success: task_created
+  - key: complete-task
+    name: Complete a task
+    entry:
+      selectors: ['[data-feature="complete-task"]']
+    success: task_completed
+  - key: move-task
+    name: Move a task between columns
+    entry:
+      selectors: ['[data-feature="move-task"]']
+    success: task_moved
+  - key: task-details
+    name: Edit a task (details, subtasks)
+    entry:
+      selectors: ['[data-feature="task-details"]']
+    success: task_edited
+  - key: clear-completed
+    name: Clear completed tasks
+    entry:
+      selectors: ['[data-feature="clear-completed"]']
+    success: completed_cleared

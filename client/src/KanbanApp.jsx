@@ -33,6 +33,7 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 
+import { lensTrack } from './openlens.js'
 // --- CONFIGURATION ---
 const COLUMNS = [
   { id: 'today', title: 'Today', headerBg: 'bg-[#FFC8A2]' }, // Salmon
@@ -94,6 +95,7 @@ export default function KanbanApp() {
   const [input, setInput] = useState('')
   const [activeTask, setActiveTask] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null) // For the modal
+  const editedTaskRef = useRef(null)
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
   const settingsRef = useRef(null)
 
@@ -173,6 +175,7 @@ export default function KanbanApp() {
   const handleAddTask = (e) => {
     e.preventDefault()
     addTaskHook(input, mode)
+    lensTrack('task_created')
     setInput('')
   }
 
@@ -191,6 +194,7 @@ export default function KanbanApp() {
 
   const handleClearCompleted = async (columnId) => {
     await clearCompletedTasks(columnId, mode)
+    lensTrack('completed_cleared')
   }
 
   // Drag & Drop
@@ -215,6 +219,7 @@ export default function KanbanApp() {
       // Let the useTasks hook handle all the logic for moving and persisting.
       // It will optimistically update the UI and then send the request.
       moveTask(active, over)
+      lensTrack('task_moved')
     }
   }
 
@@ -252,7 +257,14 @@ export default function KanbanApp() {
           key={selectedTask.id}
           task={selectedTask}
           onClose={() => setSelectedTask(null)}
-          onUpdate={updateTask}
+          onUpdate={(t) => {
+            // One 'task_edited' per opened task, not one per keystroke.
+            if (editedTaskRef.current !== selectedTask.id) {
+              editedTaskRef.current = selectedTask.id
+              lensTrack('task_edited')
+            }
+            updateTask(t)
+          }}
           onDelete={handleDeleteTask}
         />
       )}
@@ -339,6 +351,7 @@ export default function KanbanApp() {
               />
               <button
                 type="submit"
+                data-feature="add-task"
                 className="bg-[#88D8B0] text-black p-3 rounded-none font-bold border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none"
                 disabled={loading}
               >
