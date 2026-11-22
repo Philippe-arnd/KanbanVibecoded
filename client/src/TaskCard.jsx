@@ -2,6 +2,7 @@ import React from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Circle, Trash2, CheckCircle2, ListTodo } from 'lucide-react'
+import { lensTrack } from './openlens.js'
 
 // --- COMPOSANT CARTE ---
 export const TaskCard = React.memo(function TaskCard({
@@ -43,11 +44,16 @@ export const TaskCard = React.memo(function TaskCard({
       style={style}
       {...attributes}
       {...listeners}
+      data-feature="move-task"
       className="bg-white p-3 mb-3 rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border-2 border-black active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none group relative touch-manipulation"
     >
       <div className="flex items-center gap-3">
         <button
-          onClick={() => toggleTask(task.id)}
+          onClick={() => {
+            toggleTask(task.id)
+            lensTrack('task_completed')
+          }}
+          data-feature="complete-task"
           className="text-black/60 hover:text-black transition-colors flex-shrink-0"
         >
           <Circle size={20} />
@@ -56,6 +62,7 @@ export const TaskCard = React.memo(function TaskCard({
           <div className="flex justify-between items-center gap-2">
             <span
               onClick={() => openTaskModal(task)}
+              data-feature="task-details"
               className="text-sm text-black font-medium break-words block cursor-pointer hover:text-indigo-600 transition-colors"
               title="Click to view details"
             >

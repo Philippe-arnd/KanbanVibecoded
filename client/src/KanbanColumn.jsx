@@ -35,6 +35,7 @@ export const KanbanColumn = React.memo(function KanbanColumn({
         {completedTasks.length > 0 && (
           <button
             onClick={() => clearCompleted(col.id)}
+            data-feature="clear-completed"
             className="text-xs flex items-center gap-1 bg-white hover:bg-red-100 text-black px-2 py-1 rounded-sm border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-none"
           >
             <Eraser size={14} /> Clean

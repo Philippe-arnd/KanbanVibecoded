@@ -125,3 +125,10 @@ Short descriptive summary
 - Bullet point 2: Implementation detail.
 - Bullet point 3: Verification step.
 ```
+
+## Product analytics (OpenLens)
+
+The client reports usage to OpenLens (`client/src/openlens.js`, https://openlens.philapps.com). The whole app is under `data-openlens-mask`, so no decrypted text ever leaves the browser, and input values are never captured.
+
+- When you add, rename or remove a user-facing feature, update `openlens.features.yaml` (entry points, success event) in the same change, and add `data-feature="<key>"` to its main control. Then run `openlens-cli features lint --src client/src`.
+- Build-time config: `VITE_OPENLENS_HOST` and `VITE_OPENLENS_KEY` (a public capture key). Without them the SDK is not loaded.

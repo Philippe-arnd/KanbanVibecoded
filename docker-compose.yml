@@ -7,6 +7,9 @@ services:
         - 'VITE_OO_RUM_TOKEN=${VITE_OO_RUM_TOKEN:-}'
         - 'VITE_OO_APP_ID=${VITE_OO_APP_ID:-}'
         - 'VITE_OO_SERVICE_NAME=${VITE_OO_SERVICE_NAME:-}'
+        - 'VITE_OPENLENS_HOST=${VITE_OPENLENS_HOST:-}'
+        - 'VITE_OPENLENS_KEY=${VITE_OPENLENS_KEY:-}'
+        - 'SOURCE_COMMIT=${SOURCE_COMMIT:-}'
     restart: always
     environment:
       - SERVER_PORT=3000

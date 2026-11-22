@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { authClient } from '../lib/auth-client'
 import { identifyUser, clearUser } from '../observability.js'
+import { lensIdentify, lensReset } from '../openlens.js'
 
 export function useAuth() {
   const { data: session, isPending } = authClient.useSession()
@@ -25,13 +26,19 @@ export function useAuth() {
 
   const sessionUser = session?.user
   useEffect(() => {
-    if (sessionUser) identifyUser(sessionUser)
-    else if (!isPending) clearUser()
+    if (sessionUser) {
+      identifyUser(sessionUser)
+      lensIdentify(sessionUser)
+    } else if (!isPending) {
+      clearUser()
+      lensReset()
+    }
   }, [sessionUser, isPending])
 
   const logout = async () => {
     await authClient.signOut()
     clearUser()
+    lensReset()
   }
 
   return {
