@@ -22,8 +22,8 @@
       "addLabels": ["major-update"]
     },
     {
-      "description": "Postgres majors need a manual pg_upgrade or dump/restore of the prod volume: never automerge",
-      "matchPackageNames": ["postgres"],
+      "description": "Database majors need a manual migration of the prod volume (pg_upgrade, dump/restore): never automerge",
+      "matchPackageNames": ["postgres", "mysql", "mariadb", "mongo", "redis", "valkey"],
       "matchUpdateTypes": ["major"],
       "automerge": false,
       "addLabels": ["needs-manual-migration"]
