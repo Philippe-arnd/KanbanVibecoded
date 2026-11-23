@@ -29,6 +29,9 @@ jobs:
         Security & Performance / 🔑 Secret Detection
         Security & Performance / 🛡️ Security Scan
         Dependency Review / 🔎 Review Dependencies for Vulnerabilities
+      conditional-checks: |
+        Docker Validation / 🐳 Build & Validate Docker Image
+        Docker Validation / 🛢️ DB Upgrade Check
       merge-method: 'squash'
       base-branch: 'main'
       block-label: ''
