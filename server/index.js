@@ -8,6 +8,7 @@ import { createO2Proxy } from './o2-proxy.js'
 import { withRLS } from './db/index.js'
 import { tasks } from './db/schema.js'
 import { eq } from 'drizzle-orm'
+import { lensRequests, lensErrors, lensCapture } from './openlens.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -15,6 +16,9 @@ const __dirname = path.dirname(__filename)
 const app = express()
 app.set('trust proxy', true)
 const port = process.env.SERVER_PORT || 3000
+
+// OpenLens route stats and runtime health: first, so every request counts
+app.use(lensRequests())
 
 app.use(
   cors({
@@ -36,7 +40,15 @@ app.use(
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'traceparent', 'tracestate', 'baggage'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Cookie',
+      'traceparent',
+      'tracestate',
+      'baggage',
+      'x-openlens-session',
+    ],
   })
 )
 
@@ -72,6 +84,7 @@ const getSession = async (req, res, next) => {
     next()
   } catch (e) {
     console.error('Session check error', e)
+    lensCapture(e, req)
     res.status(500).json({ error: 'Internal Server Error' })
   }
 }
@@ -87,6 +100,7 @@ app.get('/api/tasks', getSession, async (req, res) => {
     res.json(userTasks)
   } catch (e) {
     console.error('Get tasks error', e)
+    lensCapture(e, req)
     res.status(500).json({ error: 'Failed to fetch tasks' })
   }
 })
@@ -100,6 +114,7 @@ app.post('/api/tasks', getSession, async (req, res) => {
     res.json(result)
   } catch (e) {
     console.error('Create task error', e)
+    lensCapture(e, req)
     res.status(500).json({ error: 'Failed to create task' })
   }
 })
@@ -121,6 +136,7 @@ app.put('/api/tasks/:id', getSession, async (req, res) => {
     res.json(result)
   } catch (e) {
     console.error('Update task error', e)
+    lensCapture(e, req)
     res.status(500).json({ error: 'Failed to update task' })
   }
 })
@@ -139,6 +155,7 @@ app.delete('/api/tasks/:id', getSession, async (req, res) => {
     res.json({ success: true })
   } catch (e) {
     console.error('Delete task error', e)
+    lensCapture(e, req)
     res.status(500).json({ error: 'Failed to delete task' })
   }
 })
@@ -161,7 +178,7 @@ app.use(
         res.append('Vary', 'Origin')
       }
     },
-  }),
+  })
 )
 
 // The "catchall" handler: for any request that doesn't
@@ -173,6 +190,9 @@ app.get(/.*/, (req, res) => {
   }
   res.sendFile(path.join(__dirname, '../client/dist/index.html'))
 })
+
+// OpenLens: errors a route did not catch (after every route)
+app.use(lensErrors())
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(port, '0.0.0.0', () => {
